@@ -13,17 +13,21 @@ import type {
  */
 
 // Lexical node types
+type LexicalElementFormat = '' | 'left' | 'start' | 'center' | 'right' | 'end' | 'justify'
+
 interface LexicalNode {
   type: string
+  version: number
   [key: string]: unknown
 }
 
-interface LexicalRoot {
+export interface LexicalRoot {
+  [key: string]: unknown
   root: {
     type: 'root'
     children: LexicalNode[]
     direction: 'ltr' | 'rtl' | null
-    format: string
+    format: LexicalElementFormat
     indent: number
     version: number
   }
@@ -43,7 +47,7 @@ interface LexicalLinkNode extends LexicalNode {
   type: 'link' | 'autolink'
   children: LexicalNode[]
   direction: 'ltr' | 'rtl' | null
-  format: string
+  format: LexicalElementFormat
   indent: number
   version: number
   fields: {
@@ -57,7 +61,7 @@ interface LexicalParagraphNode extends LexicalNode {
   type: 'paragraph'
   children: LexicalNode[]
   direction: 'ltr' | 'rtl' | null
-  format: string
+  format: LexicalElementFormat
   indent: number
   textFormat: number
   version: number
@@ -68,7 +72,7 @@ interface LexicalHeadingNode extends LexicalNode {
   tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
   children: LexicalNode[]
   direction: 'ltr' | 'rtl' | null
-  format: string
+  format: LexicalElementFormat
   indent: number
   version: number
 }
@@ -80,7 +84,7 @@ interface LexicalListNode extends LexicalNode {
   start: number
   children: LexicalNode[]
   direction: 'ltr' | 'rtl' | null
-  format: string
+  format: LexicalElementFormat
   indent: number
   version: number
 }
@@ -90,7 +94,7 @@ interface LexicalListItemNode extends LexicalNode {
   value: number
   children: LexicalNode[]
   direction: 'ltr' | 'rtl' | null
-  format: string
+  format: LexicalElementFormat
   indent: number
   version: number
 }
@@ -99,7 +103,7 @@ interface LexicalQuoteNode extends LexicalNode {
   type: 'quote'
   children: LexicalNode[]
   direction: 'ltr' | 'rtl' | null
-  format: string
+  format: LexicalElementFormat
   indent: number
   version: number
 }
@@ -120,9 +124,7 @@ const TEXT_FORMAT = {
   SUPERSCRIPT: 64,
 } as const
 
-function getTextAlignment(
-  textAlignment?: string,
-): 'left' | 'center' | 'right' | 'justify' | '' {
+function getTextAlignment(textAlignment?: string): LexicalElementFormat {
   switch (textAlignment) {
     case 'CENTER':
       return 'center'
