@@ -560,6 +560,27 @@ function parseRegulatoryNoticeFromWix(
   }
 }
 
+function resolveSupabasePublicMediaUrl(filename: string): string | null {
+  if (!filename) return null
+
+  const endpoint = process.env.S3_ENDPOINT
+  const bucket = process.env.S3_BUCKET
+  if (!endpoint || !bucket) return null
+
+  try {
+    const endpointUrl = new URL(endpoint)
+    const baseOrigin = endpointUrl.origin
+    const encodedFilename = filename
+      .split('/')
+      .map((segment) => encodeURIComponent(segment))
+      .join('/')
+
+    return `${baseOrigin}/storage/v1/object/public/${bucket}/${encodedFilename}`
+  } catch {
+    return null
+  }
+}
+
 async function resolveMediaUrlFromSource(
   payload: Awaited<ReturnType<typeof getPayload>>,
   imageSource: string,
@@ -576,7 +597,13 @@ async function resolveMediaUrlFromSource(
     },
   })
 
-  const mediaDoc = mediaBySource.docs?.[0] as { url?: unknown } | undefined
+  const mediaDoc = mediaBySource.docs?.[0] as { url?: unknown; filename?: unknown } | undefined
+  const mediaFilename = mediaDoc?.filename
+  if (typeof mediaFilename === 'string' && mediaFilename.trim() !== '') {
+    const supabaseMediaUrl = resolveSupabasePublicMediaUrl(mediaFilename)
+    if (supabaseMediaUrl) return supabaseMediaUrl
+  }
+
   const mediaUrl = mediaDoc?.url
   if (typeof mediaUrl === 'string' && mediaUrl.trim() !== '') {
     return mediaUrl
@@ -681,10 +708,21 @@ export const getHomeCMSContent = cache(async (): Promise<HomeCMSContent> => {
         },
       })
 
-      const mediaDoc = mediaBySource.docs?.[0] as { url?: unknown } | undefined
-      const mediaUrl = mediaDoc?.url
+      const mediaDoc = mediaBySource.docs?.[0] as { url?: unknown; filename?: unknown } | undefined
+      const mediaFilename = mediaDoc?.filename
+      if (typeof mediaFilename === 'string' && mediaFilename.trim() !== '') {
+        const supabaseMediaUrl = resolveSupabasePublicMediaUrl(mediaFilename)
+        if (supabaseMediaUrl) {
+          exploreMegatrendsImageUrl = supabaseMediaUrl
+        }
+      }
 
-      if (typeof mediaUrl === 'string' && mediaUrl.trim() !== '') {
+      const mediaUrl = mediaDoc?.url
+      if (
+        typeof mediaUrl === 'string' &&
+        mediaUrl.trim() !== '' &&
+        !exploreMegatrendsImageUrl.includes('/storage/v1/object/public/')
+      ) {
         exploreMegatrendsImageUrl = mediaUrl
       }
     }

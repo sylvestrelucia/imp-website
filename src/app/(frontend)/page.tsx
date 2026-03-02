@@ -31,19 +31,14 @@ export default async function HomePage() {
       <HeroSection />
       <RegulatoryStrip />
       <main className="bg-white">
+        <section className="border-t border-[#e8ecf4] bg-white py-12 md:py-14">
+          <div className="container">
+            <ExploreMegatrendsCard />
+          </div>
+        </section>
         {cms.trends.map((trend, i) => {
-          const showExploreCardAboveTrend =
-            trend.title === 'Changing Consumer Behavior/Demographics'
-
           return (
             <div key={trend.title}>
-              {showExploreCardAboveTrend ? (
-                <section className="border-t border-[#e8ecf4] bg-white py-12 md:py-14">
-                  <div className="container">
-                    <ExploreMegatrendsCard />
-                  </div>
-                </section>
-              ) : null}
               <MegatrendCard
                 {...trend}
                 detailsHref={`/megatrends#${getMegatrendAnchor(trend.title)}`}
