@@ -234,11 +234,11 @@
     @apply border-border outline-ring/50;
   }
   html {
-    background-color: var(--primary);
+    background-color: var(--secondary);
     color: var(--foreground);
   }
   body {
-    @apply bg-background text-foreground min-h-[100vh] flex flex-col;
+    @apply text-foreground min-h-[100vh] flex flex-col;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

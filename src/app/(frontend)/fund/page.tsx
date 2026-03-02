@@ -33,7 +33,7 @@ export default async function FundPage() {
             className="object-cover opacity-40"
             priority
           />
-          <div className="relative container pt-32 pb-16 md:pt-40 md:pb-20">
+          <div className="relative container pt-40 pb-16 md:pt-48 md:pb-20 lg:pt-[240px]">
             <h1 className="text-white text-[38px] md:text-[48px] leading-[1.12] tracking-tight max-w-3xl">
               The IMP Global Megatrend Umbrella Fund
             </h1>

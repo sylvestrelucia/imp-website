@@ -1,6 +1,15 @@
 'use client'
 
 import Link from 'next/link'
+import {
+  BanknotesIcon,
+  BriefcaseIcon,
+  ChartBarIcon,
+  EnvelopeIcon,
+  GlobeAltIcon,
+  HomeIcon,
+  UsersIcon,
+} from '@heroicons/react/24/outline'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 
@@ -16,6 +25,27 @@ type SiteHeaderNavItem = {
   href: string
   label: string
   newTab?: boolean
+}
+type HeaderMenuIcon = 'home' | 'fund' | 'megatrends' | 'portfolio' | 'performance' | 'about' | 'mail'
+
+const desktopHeaderNav = [
+  { href: '/', label: 'Home', icon: 'home' as const },
+  { href: '/fund', label: 'The Fund', icon: 'fund' as const },
+  { href: '/megatrends', label: 'Our Megatrends', icon: 'megatrends' as const },
+  { href: '/portfolio-strategy', label: 'Portfolio Strategy', icon: 'portfolio' as const },
+  { href: '/performance-analysis', label: 'Performance Analysis', icon: 'performance' as const },
+  { href: '/about-us', label: 'About Us', icon: 'about' as const },
+  { href: '/newsletter-subscription', label: 'Subscribe', icon: 'mail' as const },
+]
+
+function renderHeaderMenuIcon(icon: HeaderMenuIcon) {
+  if (icon === 'home') return <HomeIcon className="size-4" aria-hidden="true" />
+  if (icon === 'fund') return <BanknotesIcon className="size-4" aria-hidden="true" />
+  if (icon === 'megatrends') return <GlobeAltIcon className="size-4" aria-hidden="true" />
+  if (icon === 'portfolio') return <BriefcaseIcon className="size-4" aria-hidden="true" />
+  if (icon === 'performance') return <ChartBarIcon className="size-4" aria-hidden="true" />
+  if (icon === 'about') return <UsersIcon className="size-4" aria-hidden="true" />
+  return <EnvelopeIcon className="size-4" aria-hidden="true" />
 }
 
 function splitLabel(label: string): [string, string?] {
@@ -61,8 +91,31 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
       <header className="absolute top-0 left-0 right-0 z-50 pointer-events-none">
         <div className="w-full">
           <div
-            className={`w-full rounded-none ${transparentBg ? 'bg-transparent' : 'bg-primary/85'} backdrop-blur-[10px] text-white pointer-events-auto`}
+            className={`w-full rounded-none ${transparentBg ? 'bg-transparent' : 'bg-primary/85'} text-white pointer-events-auto`}
           >
+            <nav className="hidden lg:flex w-full bg-transparent text-white items-stretch justify-start">
+              <div className="inline-flex overflow-hidden rounded-none border-r border-secondary">
+                {desktopHeaderNav.map((item, index) => {
+                  const isActive = item.href === '/'
+                    ? pathname === '/'
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`[font-family:var(--font-display-regular)] inline-flex items-center justify-center whitespace-nowrap bg-transparent px-6 py-3 text-[15px] font-semibold text-white ${
+                        index > 0 ? 'border-l border-secondary' : ''
+                      } gap-2 ${isActive ? 'border-b border-b-transparent' : 'border-b border-secondary'}`}
+                    >
+                      {renderHeaderMenuIcon(item.icon)}
+                      <span>{item.label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+              <div className="flex-1 bg-transparent" />
+            </nav>
+
             <div className="container w-full py-3 lg:py-4 flex items-center justify-between gap-4 lg:gap-6">
               <Link href="/" className="block shrink-0">
                 <div className="hidden lg:flex items-center gap-2.5 h-[44px] mt-20">
