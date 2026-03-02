@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 
 const fallbackNav = [
   { href: '/fund', label: ['The', 'Fund'] },
@@ -29,10 +28,8 @@ function splitLabel(label: string): [string, string?] {
 }
 
 export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
-  const [visible, setVisible] = useState(true)
   const [transparentBg, setTransparentBg] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
-  const lastScrollY = useRef(0)
   const pathname = usePathname()
   const nav = (navItems?.length
     ? navItems.map((item) => {
@@ -43,11 +40,7 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
 
   useEffect(() => {
     setMenuOpen(false)
-    if (typeof window !== 'undefined' && window.scrollY <= 0) {
-      setVisible(true)
-      setTransparentBg(true)
-      lastScrollY.current = 0
-    }
+    setTransparentBg(true)
   }, [pathname])
 
   useEffect(() => {
@@ -61,65 +54,20 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
     }
   }, [menuOpen])
 
-  useEffect(() => {
-    const THRESHOLD = 10
-
-    function onScroll() {
-      const currentY = window.scrollY
-
-      // Always force the "top of page" visual state.
-      if (currentY <= 0) {
-        setVisible(true)
-        setTransparentBg(true)
-        lastScrollY.current = 0
-        return
-      }
-
-      if (Math.abs(currentY - lastScrollY.current) < THRESHOLD) return
-
-      const isScrollingUp = currentY < lastScrollY.current
-      if (isScrollingUp) {
-        setVisible(true)
-        setTransparentBg(false)
-      } else {
-        // Keep transparent while sliding out; switch to blue once hidden.
-        setVisible(false)
-      }
-      lastScrollY.current = currentY
-    }
-
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  useEffect(() => {
-    if (visible || menuOpen) return
-
-    const timeout = window.setTimeout(() => {
-      setTransparentBg(false)
-    }, 300)
-
-    return () => window.clearTimeout(timeout)
-  }, [visible, menuOpen])
-
   const toggleMenu = useCallback(() => setMenuOpen((prev) => !prev), [])
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+      <header className="absolute top-0 left-0 right-0 z-50 pointer-events-none">
         <div className="w-full">
           <div
-            className={`w-full rounded-none ${transparentBg ? 'bg-transparent' : 'bg-primary/85'} backdrop-blur-[10px] text-white pointer-events-auto transition-transform duration-300`}
-            style={{
-              transform: visible || menuOpen ? 'translateY(0)' : 'translateY(calc(-100% - 20px))',
-            }}
+            className={`w-full rounded-none ${transparentBg ? 'bg-transparent' : 'bg-primary/85'} backdrop-blur-[10px] text-white pointer-events-auto`}
           >
             <div className="container w-full py-3 lg:py-4 flex items-center justify-between gap-4 lg:gap-6">
               <Link href="/" className="block shrink-0">
-                <div className="hidden lg:flex items-center gap-2 h-[34px]">
+                <div className="hidden lg:flex items-center gap-2.5 h-[44px] mt-20">
                   <svg
-                    className="size-[34px] shrink-0 overflow-visible"
+                    className="size-[44px] shrink-0 overflow-visible"
                     viewBox="0 0 28 28"
                     role="img"
                     aria-label="IMP logo mark"
@@ -138,9 +86,9 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                       />
                     </g>
                   </svg>
-                  <span className="ml-1 font-display text-[16px] leading-[1.05] tracking-[0.01em] text-white whitespace-nowrap">
+                  <span className="ml-1 font-display font-semibold text-[20px] leading-[1.05] tracking-[0.01em] text-white whitespace-nowrap">
                     IMP Global Megatrend{' '}
-                    <span className="[font-family:var(--font-display-regular)]">Umbrella Fund</span>
+                    <span className="[font-family:var(--font-display-regular)] font-normal">Umbrella Fund</span>
                   </span>
                 </div>
                 <div className="lg:hidden flex items-center gap-2 h-[28px]">
@@ -159,45 +107,12 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                       d="M4.708 27.474c-6.274-6.274-6.274-16.48 0-22.765A15.97 15.97 0 0 1 16.091 0c4.309 0 8.343 1.669 11.383 4.709L25.863 6.32C20.468.949 11.703.949 6.32 6.331s-5.383 14.149 0 19.532z"
                     />
                   </svg>
-                  <span className="font-display text-[13px] leading-[1.05] tracking-[0.01em] text-white whitespace-nowrap">
+                  <span className="font-display font-semibold text-[13px] leading-[1.05] tracking-[0.01em] text-white whitespace-nowrap">
                     IMP Global Megatrend{' '}
-                    <span className="[font-family:var(--font-display-regular)]">Umbrella Fund</span>
+                    <span className="[font-family:var(--font-display-regular)] font-normal">Umbrella Fund</span>
                   </span>
                 </div>
               </Link>
-
-              <Button
-                asChild
-                variant="headerSubscribe"
-                size="clear"
-                className="hidden lg:inline-flex group rounded-none bg-white text-primary-light hover:bg-white hover:text-primary-light [font-family:var(--font-display-regular)] [&_svg]:transition-transform [&_svg]:duration-300 hover:[&_svg]:scale-x-[-1]"
-              >
-                <Link href="/newsletter-subscription">
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M1.25 4.75A1.75 1.75 0 0 1 3 3h10a1.75 1.75 0 0 1 1.75 1.75v6.5A1.75 1.75 0 0 1 13 13H3a1.75 1.75 0 0 1-1.75-1.75z"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="m1.75 5.25 5.334 4.14a1.5 1.5 0 0 0 1.832 0l5.334-4.14"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  Subscribe
-                </Link>
-              </Button>
 
               {/* Mobile hamburger */}
               <button

@@ -234,7 +234,7 @@
     @apply border-border outline-ring/50;
   }
   html {
-    background-color: var(--background);
+    background-color: var(--primary);
     color: var(--foreground);
   }
   body {

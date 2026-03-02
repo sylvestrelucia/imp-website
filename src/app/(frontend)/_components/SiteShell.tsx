@@ -71,7 +71,7 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
       .map((item) => item as NavItem) || footerNav
 
   return (
-    <div className="min-h-screen bg-white text-[#0b1035]">
+    <div className="min-h-screen bg-primary text-[#0b1035]">
       <TrackingConsentManager />
       <SiteHeader navItems={headerNavItems} />
       <ContentGatePopup />
