@@ -1,6 +1,6 @@
 build
 dist
-media
+/media
 node_modules
 .DS_Store
 .env
@@ -9,6 +9,7 @@ node_modules
 
 # Payload default media upload directory
 public/media/
+public/impgmt-clone/static.wixstatic.com/media/
 
 public/robots.txt
 public/sitemap*.xml
