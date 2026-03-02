@@ -87,6 +87,25 @@ const megatrends = [
   },
 ]
 
+function getMegatrendAnchor(title: string): string {
+  const byTitle: Record<string, string> = {
+    'Technology/Technological Advancements': 'technology-technological-advancements',
+    'Changing Consumer Behavior/Demographics': 'changing-consumer-behavior-demographics',
+    'Healthcare/Longevity Revolution': 'healthcare-longevity-revolution',
+    'Shift in Economic Power': 'shift-in-economic-power',
+    'Mobility/Transportation': 'mobility-transportation',
+    'Smart Infrastructure/Smart City': 'smart-infrastructure-smart-city',
+  }
+
+  const mapped = byTitle[title]
+  if (mapped) return mapped
+
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 export default async function MegatrendsPage() {
   const cmsPage = await getCMSPageBySlug('megatrends')
   if (cmsPage) {
@@ -116,7 +135,11 @@ export default async function MegatrendsPage() {
         {/* Megatrend sections */}
         <div className="container pb-16 md:pb-20 space-y-16">
           {megatrends.map((trend, idx) => (
-            <section key={trend.title} className="grid md:grid-cols-[80px_1fr] gap-6 md:gap-8">
+            <section
+              id={getMegatrendAnchor(trend.title)}
+              key={trend.title}
+              className="grid md:grid-cols-[80px_1fr] gap-6 md:gap-8 scroll-mt-24"
+            >
               <div className="flex items-start">
                 <img
                   src={trend.icon}

@@ -585,6 +585,14 @@ export function resolveWixImageUrl(urlOrId?: string): string {
     return `https://static.wixstatic.com/media/${fileId}`
   }
 
+  // Handle wix:document://v1/ugd/{fileId}.ext/{name}.ext format
+  if (urlOrId.startsWith('wix:document://')) {
+    const match = urlOrId.match(/wix:document:\/\/v1\/ugd\/([^/]+)/)
+    if (match?.[1]) {
+      return `https://www.impgmtfund.com/_files/ugd/${match[1]}`
+    }
+  }
+
   // Handle plain file IDs
   if (urlOrId.includes('.')) {
     return `https://static.wixstatic.com/media/${urlOrId}`

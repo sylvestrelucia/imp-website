@@ -1,63 +1,56 @@
 import Image from 'next/image'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { AnimatedIcon } from './AnimatedIcon'
+import type { AnimatedIconName } from './AnimatedIcon'
+import { ActionLinkButton } from './ActionLinkButton'
+import { TickerBadge } from './TickerBadge'
 
 interface MegatrendCardProps {
   title: string
   body: string
-  icon: string
-  image: string
+  imageUrl: string
   tickers: [string, string][]
   reverse?: boolean
+  detailsHref?: string
+  detailsIcon?: AnimatedIconName
 }
 
-export function MegatrendCard({ title, body, icon, image, tickers, reverse }: MegatrendCardProps) {
+export function MegatrendCard({
+  title,
+  body,
+  imageUrl,
+  tickers,
+  reverse,
+  detailsHref = '/megatrends',
+  detailsIcon = 'arrowUpRight',
+}: MegatrendCardProps) {
   return (
-    <article className="border-t border-[#d9def0] py-16 md:py-20">
+    <article className="border-t border-[#d9def0] pt-16 md:pt-20 pb-0">
       <div className="container">
         <div
-          className={`grid lg:grid-cols-2 gap-10 lg:gap-16 items-start ${reverse ? 'lg:direction-rtl' : ''}`}
+          className={`grid lg:grid-cols-2 gap-10 lg:gap-16 items-stretch ${reverse ? 'lg:direction-rtl' : ''}`}
           style={reverse ? { direction: 'rtl' } : undefined}
         >
           {/* text column */}
-          <div style={reverse ? { direction: 'ltr' } : undefined}>
-            <div className="flex items-start gap-4">
+          <div className="h-full" style={reverse ? { direction: 'ltr' } : undefined}>
+            <div className="flex h-full items-stretch gap-4">
               {/* vertical title */}
-              <div className="hidden md:flex flex-col items-center shrink-0">
+              <div className="hidden md:flex items-stretch gap-2 shrink-0 self-stretch">
                 <span
-                  className="text-[#0b1035] text-[14px] tracking-[0.05em] uppercase font-medium whitespace-nowrap"
+                  className="font-display text-right text-[#0b1035] text-[18px] font-medium whitespace-nowrap"
                   style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
                 >
                   {title}
                 </span>
+                <span aria-hidden className="w-px self-stretch bg-[#d9def0]" />
               </div>
 
-              <div className="flex-1 space-y-5">
-                <Image src={icon} alt="" width={48} height={50} className="rounded-md" />
+              <div className="flex-1 self-start space-y-5">
                 <p className="text-[#2b3045] text-[16px] md:text-[17px] leading-[1.7]">{body}</p>
 
-                <Button
-                  asChild
-                  variant="outlineBrand"
-                  size="clear"
-                  className="px-5 py-2.5"
-                >
-                  <Link href="/megatrends" className="group">
-                    Megatrend Details
-                    <AnimatedIcon name="arrowUpRight" size={12} className="shrink-0 text-current" />
-                  </Link>
-                </Button>
+                <ActionLinkButton href={detailsHref} label="Megatrend Details" icon={detailsIcon} />
 
                 <div className="flex flex-wrap gap-3 pt-2">
                   {tickers.map(([ticker, company]) => (
-                    <span
-                      key={ticker}
-                      className="inline-flex items-center gap-2 rounded-full bg-[#e8edff] text-[#0b1035] px-4 py-2 text-[13px] uppercase tracking-[0.06em] font-medium"
-                    >
-                      <span className="text-[#0040ff] font-semibold">{ticker}</span>
-                      {company}
-                    </span>
+                    <TickerBadge key={ticker} ticker={ticker} company={company} />
                   ))}
                 </div>
 
@@ -73,7 +66,7 @@ export function MegatrendCard({ title, body, icon, image, tickers, reverse }: Me
             style={reverse ? { direction: 'ltr' } : undefined}
           >
             <Image
-              src={image}
+              src={imageUrl}
               alt={title}
               width={480}
               height={480}

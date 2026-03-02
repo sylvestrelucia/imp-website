@@ -1,13 +1,31 @@
 import Image from 'next/image'
-import Link from 'next/link'
-import { AnimatedIcon } from './AnimatedIcon'
+import { ActionLinkButton } from './ActionLinkButton'
 import { getHomeCMSContent } from './getHomeCMSContent'
+
+export async function ExploreMegatrendsCard() {
+  const cms = await getHomeCMSContent()
+
+  return (
+    <div className="flex flex-col items-center text-center">
+      <h3 className="text-[20px] md:text-[22px] text-[#0b1035] mb-4">{cms.exploreMegatrendsCard.title}</h3>
+      <img
+        src={cms.exploreMegatrendsCard.imageUrl}
+        alt={cms.exploreMegatrendsCard.title}
+        className="mb-5 w-[140px] h-[140px] object-contain"
+        loading="lazy"
+      />
+    </div>
+  )
+}
 
 export async function BottomGrid() {
   const cms = await getHomeCMSContent()
 
   return (
-    <section className="border-t border-[#e8ecf4] bg-white py-16 md:py-20">
+    <section
+      className="border-t border-[#e8ecf4] bg-white py-16 md:py-20"
+      data-transition-static="true"
+    >
       <div className="container">
         <div className="grid md:grid-cols-3 gap-10 lg:gap-14">
           {/* See Performance */}
@@ -20,13 +38,11 @@ export async function BottomGrid() {
               height={160}
               className="mb-5"
             />
-            <Link
+            <ActionLinkButton
               href="/performance-analysis"
-              className="group inline-flex items-center gap-2 border border-[#0040ff] text-[#0040ff] px-5 py-2.5 rounded text-[13px] uppercase tracking-[0.12em] font-medium hover:bg-[#0040ff]/5 transition-colors"
-            >
-              Performance Chart
-              <AnimatedIcon name="arrowUpRight" size={12} className="shrink-0 text-current" />
-            </Link>
+              label="Performance Chart"
+              icon="chartLine"
+            />
           </div>
 
           {/* Request Consultation */}
@@ -41,13 +57,7 @@ export async function BottomGrid() {
               height={160}
               className="mb-5"
             />
-            <Link
-              href="/contact-us"
-              className="group inline-flex items-center gap-2 bg-[#0040ff] text-white px-5 py-2.5 rounded text-[13px] uppercase tracking-[0.12em] font-medium hover:bg-[#0035d9] transition-colors"
-            >
-              Write to us
-              <AnimatedIcon name="arrowUpRight" size={12} className="shrink-0 text-current" />
-            </Link>
+            <ActionLinkButton href="/contact-us" label="Write to us" icon="mailCheck" />
           </div>
 
           {/* Downloads */}
@@ -63,18 +73,16 @@ export async function BottomGrid() {
                 height={140}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {cms.downloads.map((d) => (
-                <a
+                <ActionLinkButton
                   key={d.label}
                   href={d.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group flex items-center gap-3 border border-[#d9def0] rounded px-4 py-3 text-[14px] text-[#0b1035] hover:bg-[#f5f7ff] transition-colors"
-                >
-                  <AnimatedIcon name="download" size={14} className="shrink-0 text-[#0040ff]" />
-                  {d.label}
-                </a>
+                  label={d.label}
+                  icon="download"
+                  external
+                  className="justify-center md:justify-start px-3 py-2.5 text-[11px] tracking-[0.08em] sm:px-4 sm:text-[12px] md:px-5 md:text-[13px] md:tracking-[0.12em]"
+                />
               ))}
             </div>
           </div>

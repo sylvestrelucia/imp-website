@@ -32,7 +32,7 @@ function collectAssetUrls(value: unknown, out: Set<string>): void {
     const candidate = value.trim()
     if (!candidate) return
 
-    if (candidate.startsWith('wix:image://')) {
+    if (candidate.startsWith('wix:image://') || candidate.startsWith('wix:document://')) {
       out.add(candidate)
       return
     }

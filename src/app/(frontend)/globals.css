@@ -292,8 +292,53 @@
 
 .page-transition {
   display: block;
-  background-color: var(--primary);
+  position: relative;
+  background-color: #ffffff;
   isolation: isolate;
+}
+
+.page-transition::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+}
+
+.page-transition-leave {
+  --page-transition-duration: 190ms;
+}
+
+.page-transition-enter-start {
+  --page-transition-duration: 0ms;
+}
+
+.page-transition-enter {
+  --page-transition-duration: 320ms;
+}
+
+.page-transition-leave::before,
+.page-transition-enter-start::before,
+.page-transition-enter::before {
+  transition: opacity var(--page-transition-duration, 320ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.page-transition-leave::before,
+.page-transition-enter-start::before {
+  opacity: 1;
+}
+
+.page-transition-enter::before {
+  opacity: 0;
+}
+
+.page-transition-leave [data-transition-skip='true'],
+.page-transition-enter-start [data-transition-skip='true'],
+.page-transition-enter [data-transition-skip='true'] {
+  position: relative;
+  z-index: 2;
 }
 
 .transition-item {
@@ -310,6 +355,13 @@
 .transition-item-in {
   opacity: 1;
   transition-duration: 320ms;
+}
+
+[data-transition-static='true'].transition-item,
+[data-transition-static='true'].transition-item-in,
+[data-transition-static='true'].transition-item-out {
+  opacity: 1 !important;
+  transition: none !important;
 }
 
 .regulatory-strip .regulatory-strip-item {

@@ -9,7 +9,10 @@ export async function HeroSection() {
   const subtitle = cms.hero.subtitle
 
   return (
-    <section className="relative grid bg-primary overflow-hidden min-h-[600px] md:min-h-[700px]">
+    <section
+      className="relative grid bg-primary overflow-hidden min-h-[600px] md:min-h-[700px]"
+      data-transition-skip="true"
+    >
       {/* Interactive background */}
       <GradientMotionBackground seed={2026} className="row-start-1 col-start-1" />
 

@@ -5,13 +5,13 @@ import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 
 const FADE_DURATION_MS = 190
 const HERO_HEIGHT_TRANSITION_MS = 280
+const FADE_IN_DURATION_MS = 320
 
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const contentRef = useRef<HTMLDivElement | null>(null)
   const timersRef = useRef<number[]>([])
-  const hasMountedRef = useRef(false)
   const rafRef = useRef<number | null>(null)
   const heroRafRef = useRef<number | null>(null)
   const pendingHeroHeightRef = useRef<number | null>(null)
@@ -27,42 +27,6 @@ export function PageTransition({ children }: { children: ReactNode }) {
       window.cancelAnimationFrame(heroRafRef.current)
       heroRafRef.current = null
     }
-  }
-
-  const setPhase = (element: Element, phase: 'in' | 'out') => {
-    element.classList.add('transition-item')
-    element.classList.remove('transition-item-in', 'transition-item-out')
-    element.classList.add(phase === 'in' ? 'transition-item-in' : 'transition-item-out')
-  }
-
-  const getContentTargets = (contentRoot: HTMLElement): Element[] => {
-    const directChildren = Array.from(contentRoot.children)
-    if (directChildren.length === 0) return [contentRoot]
-
-    // If page renders multiple top-level blocks, animate each block in sequence.
-    if (directChildren.length > 1) {
-      return directChildren.filter((element) => !element.matches('[data-transition-skip="true"]'))
-    }
-
-    const onlyChild = directChildren[0]
-    if (!onlyChild) return [contentRoot]
-
-    // If a single main/article wraps the whole page, stagger its direct blocks.
-    if (onlyChild.tagName === 'MAIN' || onlyChild.tagName === 'ARTICLE') {
-      const nestedBlocks = Array.from(onlyChild.children)
-      const filteredBlocks = nestedBlocks.filter((element) => !element.matches('[data-transition-skip="true"]'))
-      return filteredBlocks
-    }
-
-    return onlyChild.matches('[data-transition-skip="true"]') ? [] : [onlyChild]
-  }
-
-  const getOrderedTargets = () => {
-    const content = contentRef.current
-    if (!content) return []
-    const contentTargets = getContentTargets(content)
-    const forcedTargets = Array.from(content.querySelectorAll('[data-transition-force="true"]'))
-    return Array.from(new Set([...contentTargets, ...forcedTargets]))
   }
 
   const getSkippedHero = () => {
@@ -135,15 +99,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
         return
       }
 
-      const orderedTargets = getOrderedTargets()
-
       event.preventDefault()
       clearTimers()
-      if (orderedTargets.length === 0) {
-        router.push(nextPath)
-        return
-      }
-      orderedTargets.forEach((targetElement) => setPhase(targetElement, 'out'))
+      const content = contentRef.current
+      content?.classList.remove('page-transition-enter-start', 'page-transition-enter')
+      content?.classList.add('page-transition-leave')
       timersRef.current.push(window.setTimeout(() => router.push(nextPath), FADE_DURATION_MS))
     }
 
@@ -154,23 +114,30 @@ export function PageTransition({ children }: { children: ReactNode }) {
   }, [router, pathname])
 
   useLayoutEffect(() => {
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true
-      return
-    }
-
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return
     }
 
-    const orderedTargets = getOrderedTargets()
+    const content = contentRef.current
     clearTimers()
     animateHeroHeightIfNeeded()
-    // Apply out phase before paint so new content does not flash fully visible first.
-    orderedTargets.forEach((target) => setPhase(target, 'out'))
-    rafRef.current = window.requestAnimationFrame(() => {
-      orderedTargets.forEach((target) => setPhase(target, 'in'))
-    })
+
+    // Remove any stale leave class and run reliable fade-in.
+    if (content) {
+      content.classList.remove('page-transition-leave', 'page-transition-enter', 'page-transition-enter-start')
+      content.classList.add('page-transition-enter-start')
+      // Force start state to be committed first.
+      content.getBoundingClientRect()
+      rafRef.current = window.requestAnimationFrame(() => {
+        content.classList.remove('page-transition-enter-start')
+        content.classList.add('page-transition-enter')
+      })
+      timersRef.current.push(
+        window.setTimeout(() => {
+          content.classList.remove('page-transition-enter')
+        }, FADE_IN_DURATION_MS),
+      )
+    }
 
     return clearTimers
   }, [pathname])

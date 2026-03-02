@@ -1,56 +1,60 @@
 import { HeroSection } from './_components/HeroSection'
 import { RegulatoryStrip } from './_components/RegulatoryStrip'
 import { MegatrendCard } from './_components/MegatrendCard'
-import { BottomGrid } from './_components/BottomGrid'
-import { RegulatoryNotice } from './_components/RegulatoryNotice'
+import { BottomGrid, ExploreMegatrendsCard } from './_components/BottomGrid'
 import { getHomeCMSContent } from './_components/getHomeCMSContent'
 
-const trendVisuals = [
-  {
-    icon: '/images/technology_icon.png',
-    image: '/images/megatrend_technology.png',
-  },
-  {
-    icon: '/images/consumer_icon.png',
-    image: '/images/megatrend_consumer.png',
-  },
-  {
-    icon: '/images/healthcare_icon.png',
-    image: '/images/megatrend_healthcare.png',
-  },
-  {
-    icon: '/images/economic_icon.png',
-    image: '/images/megatrend_economic.png',
-  },
-  {
-    icon: '/images/mobility_icon.png',
-    image: '/images/megatrend_mobility.png',
-  },
-  {
-    icon: '/images/infrastructure_icon.png',
-    image: '/images/megatrend_infrastructure.png',
-  },
-]
+function getMegatrendAnchor(title: string): string {
+  const byTitle: Record<string, string> = {
+    'Technology/Technological Advancements': 'technology-technological-advancements',
+    'Changing Consumer Behavior/Demographics': 'changing-consumer-behavior-demographics',
+    'Healthcare/Longevity Revolution': 'healthcare-longevity-revolution',
+    'Shift in Economic Power': 'shift-in-economic-power',
+    'Mobility/Transportation': 'mobility-transportation',
+    'Smart Infrastructure/Smart City': 'smart-infrastructure-smart-city',
+  }
+
+  const mapped = byTitle[title]
+  if (mapped) return mapped
+
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
 
 export default async function HomePage() {
   const cms = await getHomeCMSContent()
-  const trends = cms.trends.map((trend, index) => ({
-    ...trend,
-    icon: trendVisuals[index]?.icon ?? trendVisuals[0].icon,
-    image: trendVisuals[index]?.image ?? trendVisuals[0].image,
-  }))
 
   return (
     <>
       <HeroSection />
       <RegulatoryStrip />
       <main className="bg-white">
-        {trends.map((trend, i) => (
-          <MegatrendCard key={trend.title} {...trend} reverse={i % 2 === 1} />
-        ))}
+        {cms.trends.map((trend, i) => {
+          const showExploreCardAboveTrend =
+            trend.title === 'Changing Consumer Behavior/Demographics'
+
+          return (
+            <div key={trend.title}>
+              {showExploreCardAboveTrend ? (
+                <section className="border-t border-[#e8ecf4] bg-white py-12 md:py-14">
+                  <div className="container">
+                    <ExploreMegatrendsCard />
+                  </div>
+                </section>
+              ) : null}
+              <MegatrendCard
+                {...trend}
+                detailsHref={`/megatrends#${getMegatrendAnchor(trend.title)}`}
+                detailsIcon="trendingUp"
+                reverse={i % 2 === 1}
+              />
+            </div>
+          )
+        })}
       </main>
       <BottomGrid />
-      <RegulatoryNotice />
     </>
   )
 }
