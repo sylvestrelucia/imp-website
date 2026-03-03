@@ -101,6 +101,136 @@ void main(){
 }
 `;
 
+let sharedRuntime = null;
+
+const lerp = (a, b, t) => a + (b - a) * t;
+
+const ensureSharedRuntime = initial => {
+  if (sharedRuntime) return sharedRuntime;
+
+  const renderer = new Renderer({
+    webgl: 2,
+    alpha: true,
+    antialias: false,
+    dpr: Math.min(window.devicePixelRatio || 1, 2)
+  });
+
+  const gl = renderer.gl;
+  const canvas = gl.canvas;
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  canvas.style.display = 'block';
+
+  const geometry = new Triangle(gl);
+  const program = new Program(gl, {
+    vertex,
+    fragment,
+    uniforms: {
+      iTime: { value: 0 },
+      iResolution: { value: new Float32Array([1, 1]) },
+      uTimeSpeed: { value: initial.timeSpeed },
+      uColorBalance: { value: initial.colorBalance },
+      uWarpStrength: { value: initial.warpStrength },
+      uWarpFrequency: { value: initial.warpFrequency },
+      uWarpSpeed: { value: initial.warpSpeed },
+      uWarpAmplitude: { value: initial.warpAmplitude },
+      uBlendAngle: { value: initial.blendAngle },
+      uBlendSoftness: { value: initial.blendSoftness },
+      uRotationAmount: { value: initial.rotationAmount },
+      uNoiseScale: { value: initial.noiseScale },
+      uGrainAmount: { value: initial.grainAmount },
+      uGrainScale: { value: initial.grainScale },
+      uGrainAnimated: { value: initial.grainAnimated ? 1.0 : 0.0 },
+      uContrast: { value: initial.contrast },
+      uGamma: { value: initial.gamma },
+      uSaturation: { value: initial.saturation },
+      uCenterOffset: { value: new Float32Array([initial.centerX, initial.centerY]) },
+      uZoom: { value: initial.zoom },
+      uColor1: { value: new Float32Array(hexToRgb(initial.color1)) },
+      uColor2: { value: new Float32Array(hexToRgb(initial.color2)) },
+      uColor3: { value: new Float32Array(hexToRgb(initial.color3)) }
+    }
+  });
+  const mesh = new Mesh(gl, { geometry, program });
+
+  sharedRuntime = {
+    renderer,
+    gl,
+    canvas,
+    program,
+    mesh,
+    raf: 0,
+    startTimeMs: null,
+    attachCount: 0,
+    targetColor1: hexToRgb(initial.color1),
+    targetColor2: hexToRgb(initial.color2),
+    targetColor3: hexToRgb(initial.color3)
+  };
+
+  return sharedRuntime;
+};
+
+const setRuntimeSize = (runtime, container) => {
+  const rect = container.getBoundingClientRect();
+  const width = Math.max(1, Math.floor(rect.width));
+  const height = Math.max(1, Math.floor(rect.height));
+  runtime.renderer.setSize(width, height);
+  const res = runtime.program.uniforms.iResolution.value;
+  res[0] = runtime.gl.drawingBufferWidth;
+  res[1] = runtime.gl.drawingBufferHeight;
+};
+
+const applyRuntimeTargets = (runtime, settings) => {
+  const uniforms = runtime.program.uniforms;
+
+  uniforms.uTimeSpeed.value = settings.timeSpeed;
+  uniforms.uColorBalance.value = settings.colorBalance;
+  uniforms.uWarpStrength.value = settings.warpStrength;
+  uniforms.uWarpFrequency.value = settings.warpFrequency;
+  uniforms.uWarpSpeed.value = settings.warpSpeed;
+  uniforms.uWarpAmplitude.value = settings.warpAmplitude;
+  uniforms.uBlendAngle.value = settings.blendAngle;
+  uniforms.uBlendSoftness.value = settings.blendSoftness;
+  uniforms.uRotationAmount.value = settings.rotationAmount;
+  uniforms.uNoiseScale.value = settings.noiseScale;
+  uniforms.uGrainAmount.value = settings.grainAmount;
+  uniforms.uGrainScale.value = settings.grainScale;
+  uniforms.uGrainAnimated.value = settings.grainAnimated ? 1.0 : 0.0;
+  uniforms.uContrast.value = settings.contrast;
+  uniforms.uGamma.value = settings.gamma;
+  uniforms.uSaturation.value = settings.saturation;
+  uniforms.uCenterOffset.value[0] = settings.centerX;
+  uniforms.uCenterOffset.value[1] = settings.centerY;
+  uniforms.uZoom.value = settings.zoom;
+
+  runtime.targetColor1 = hexToRgb(settings.color1);
+  runtime.targetColor2 = hexToRgb(settings.color2);
+  runtime.targetColor3 = hexToRgb(settings.color3);
+};
+
+const startRuntimeLoop = runtime => {
+  if (runtime.raf) return;
+
+  const loop = t => {
+    if (runtime.startTimeMs === null) runtime.startTimeMs = t;
+    runtime.program.uniforms.iTime.value = (t - runtime.startTimeMs) * 0.001;
+
+    const color1 = runtime.program.uniforms.uColor1.value;
+    const color2 = runtime.program.uniforms.uColor2.value;
+    const color3 = runtime.program.uniforms.uColor3.value;
+    for (let i = 0; i < 3; i += 1) {
+      color1[i] = lerp(color1[i], runtime.targetColor1[i], 0.12);
+      color2[i] = lerp(color2[i], runtime.targetColor2[i], 0.12);
+      color3[i] = lerp(color3[i], runtime.targetColor3[i], 0.12);
+    }
+
+    runtime.renderer.render({ scene: runtime.mesh });
+    runtime.raf = requestAnimationFrame(loop);
+  };
+
+  runtime.raf = requestAnimationFrame(loop);
+};
+
 const Grainient = ({
   timeSpeed = 0.25,
   colorBalance = 0.0,
@@ -127,98 +257,109 @@ const Grainient = ({
   className = ''
 }) => {
   const containerRef = useRef(null);
+  const runtimeRef = useRef(null);
+  const resizeObserverRef = useRef(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
-
-    const renderer = new Renderer({
-      webgl: 2,
-      alpha: true,
-      antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
+    const runtime = ensureSharedRuntime({
+      timeSpeed,
+      colorBalance,
+      warpStrength,
+      warpFrequency,
+      warpSpeed,
+      warpAmplitude,
+      blendAngle,
+      blendSoftness,
+      rotationAmount,
+      noiseScale,
+      grainAmount,
+      grainScale,
+      grainAnimated,
+      contrast,
+      gamma,
+      saturation,
+      centerX,
+      centerY,
+      zoom,
+      color1,
+      color2,
+      color3
     });
-
-    const gl = renderer.gl;
-    const canvas = gl.canvas;
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    canvas.style.display = 'block';
+    runtimeRef.current = runtime;
 
     const container = containerRef.current;
-    container.style.opacity = '0';
-    container.style.transition = 'opacity 220ms ease';
-    container.appendChild(canvas);
-
-    const geometry = new Triangle(gl);
-    const program = new Program(gl, {
-      vertex,
-      fragment,
-      uniforms: {
-        iTime: { value: 0 },
-        iResolution: { value: new Float32Array([1, 1]) },
-        uTimeSpeed: { value: timeSpeed },
-        uColorBalance: { value: colorBalance },
-        uWarpStrength: { value: warpStrength },
-        uWarpFrequency: { value: warpFrequency },
-        uWarpSpeed: { value: warpSpeed },
-        uWarpAmplitude: { value: warpAmplitude },
-        uBlendAngle: { value: blendAngle },
-        uBlendSoftness: { value: blendSoftness },
-        uRotationAmount: { value: rotationAmount },
-        uNoiseScale: { value: noiseScale },
-        uGrainAmount: { value: grainAmount },
-        uGrainScale: { value: grainScale },
-        uGrainAnimated: { value: grainAnimated ? 1.0 : 0.0 },
-        uContrast: { value: contrast },
-        uGamma: { value: gamma },
-        uSaturation: { value: saturation },
-        uCenterOffset: { value: new Float32Array([centerX, centerY]) },
-        uZoom: { value: zoom },
-        uColor1: { value: new Float32Array(hexToRgb(color1)) },
-        uColor2: { value: new Float32Array(hexToRgb(color2)) },
-        uColor3: { value: new Float32Array(hexToRgb(color3)) }
-      }
+    applyRuntimeTargets(runtime, {
+      timeSpeed,
+      colorBalance,
+      warpStrength,
+      warpFrequency,
+      warpSpeed,
+      warpAmplitude,
+      blendAngle,
+      blendSoftness,
+      rotationAmount,
+      noiseScale,
+      grainAmount,
+      grainScale,
+      grainAnimated,
+      contrast,
+      gamma,
+      saturation,
+      centerX,
+      centerY,
+      zoom,
+      color1,
+      color2,
+      color3
     });
 
-    const mesh = new Mesh(gl, { geometry, program });
+    container.appendChild(runtime.canvas);
+    runtime.attachCount += 1;
 
-    const setSize = () => {
-      const rect = container.getBoundingClientRect();
-      const width = Math.max(1, Math.floor(rect.width));
-      const height = Math.max(1, Math.floor(rect.height));
-      renderer.setSize(width, height);
-      const res = program.uniforms.iResolution.value;
-      res[0] = gl.drawingBufferWidth;
-      res[1] = gl.drawingBufferHeight;
-    };
-
-    const ro = new ResizeObserver(setSize);
+    const ro = new ResizeObserver(() => setRuntimeSize(runtime, container));
+    resizeObserverRef.current = ro;
     ro.observe(container);
-    setSize();
-
-    let raf = 0;
-    const t0 = performance.now();
-    let hasPainted = false;
-    const loop = t => {
-      program.uniforms.iTime.value = (t - t0) * 0.001;
-      renderer.render({ scene: mesh });
-      if (!hasPainted) {
-        hasPainted = true;
-        container.style.opacity = '1';
-      }
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
+    setRuntimeSize(runtime, container);
+    startRuntimeLoop(runtime);
 
     return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-      try {
-        container.removeChild(canvas);
-      } catch {
-        // Ignore
-      }
+      resizeObserverRef.current?.disconnect();
+      resizeObserverRef.current = null;
+      runtime.attachCount = Math.max(0, runtime.attachCount - 1);
+      // Keep the shared loop alive to avoid restart flicker between route swaps.
     };
+    // Intentionally mount once; shared runtime receives prop updates below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const runtime = runtimeRef.current || sharedRuntime;
+    if (!runtime) return;
+    applyRuntimeTargets(runtime, {
+      timeSpeed,
+      colorBalance,
+      warpStrength,
+      warpFrequency,
+      warpSpeed,
+      warpAmplitude,
+      blendAngle,
+      blendSoftness,
+      rotationAmount,
+      noiseScale,
+      grainAmount,
+      grainScale,
+      grainAnimated,
+      contrast,
+      gamma,
+      saturation,
+      centerX,
+      centerY,
+      zoom,
+      color1,
+      color2,
+      color3
+    });
   }, [
     timeSpeed,
     colorBalance,

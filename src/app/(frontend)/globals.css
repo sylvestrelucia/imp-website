@@ -352,6 +352,11 @@
   transition-duration: 190ms;
 }
 
+.page-transition-leave [data-transition-keep-on-leave='true'] {
+  opacity: 1;
+  transition-duration: 0ms;
+}
+
 .page-transition-enter-start [data-transition-force='true'] {
   opacity: 0;
   transition-duration: 0ms;
