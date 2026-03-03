@@ -1,6 +1,7 @@
 import {
   getCMSContentSectionsBySlug,
   getCMSFundDetails,
+  getCMSFundIntroQuotes,
   getCMSFundShareClassMeta,
   getCMSHeroCopyBySlug,
   getCMSPageBySlug,
@@ -79,12 +80,41 @@ function renderDetailValue(label: string, value: string) {
   )
 }
 
+const MEGATREND_HIGHLIGHTS = [
+  'Technology/Technological Advancements',
+  'Changing Consumer Behavior/Demographics',
+  'Healthcare/Longevity Revolution',
+  'Shift in Economic Power',
+  'Mobility/Transportation',
+  'Smart Infrastructure/Smart City',
+]
+
+function escapeRegex(input: string): string {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function renderIntroTextWithHighlights(text: string) {
+  const pattern = new RegExp(`(${MEGATREND_HIGHLIGHTS.map(escapeRegex).join('|')})`, 'gi')
+  const chunks = text.split(pattern)
+
+  return chunks.map((chunk, index) => {
+    const isMegatrend = MEGATREND_HIGHLIGHTS.some((trend) => trend.toLowerCase() === chunk.toLowerCase())
+    if (!isMegatrend) return <span key={`intro-chunk-${index}`}>{chunk}</span>
+
+    return (
+      <span key={`intro-chunk-${index}`} className="text-[#62A8FF]">
+        {chunk}
+      </span>
+    )
+  })
+}
+
 export default async function FundPage() {
   const cmsHeroCopy = await getCMSHeroCopyBySlug('fund')
   const heroTitle = cmsHeroCopy?.title ?? ''
   const heroSubtitle = cmsHeroCopy?.subtitle
   const cmsSections = await getCMSContentSectionsBySlug('fund')
-  const introText = cmsSections[0] ?? ''
+  const introQuotes = await getCMSFundIntroQuotes('fund')
 
   const usdFallback: ShareClassContent = {
     title: 'USD Share Class',
@@ -128,13 +158,20 @@ export default async function FundPage() {
           sectionClassName="relative overflow-hidden"
         />
 
-        {introText ? (
+        {introQuotes?.first ? (
           <section className="bg-secondary py-20 md:py-24">
             <div className="container">
-              <div className="max-w-5xl">
-                <blockquote className="border-l-2 border-primary-light pl-8 pr-8 text-white italic font-thin leading-relaxed text-[18px] md:text-[19px] whitespace-pre-line">
-                  {introText}
-                </blockquote>
+              <div className="max-w-5xl space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                  <blockquote className="border-l border-primary-light pl-8 pr-8 text-[#62A8FF] font-thin leading-relaxed text-[18px] md:text-[19px] whitespace-pre-line">
+                    {renderIntroTextWithHighlights(introQuotes.first)}
+                  </blockquote>
+                  {introQuotes.second ? (
+                    <blockquote className="border-l border-primary-light pl-8 pr-8 text-[#62A8FF] font-thin leading-relaxed text-[18px] md:text-[19px] whitespace-pre-line">
+                      {introQuotes.second}
+                    </blockquote>
+                  ) : null}
+                </div>
               </div>
             </div>
           </section>

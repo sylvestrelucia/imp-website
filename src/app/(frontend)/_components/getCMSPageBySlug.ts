@@ -205,6 +205,54 @@ export async function getCMSContentSectionsBySlug(slug: string): Promise<string[
   }
 }
 
+export async function getCMSFundIntroQuotes(
+  _slug = 'fund',
+): Promise<{ first: string; second: string | null } | null> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'wix-fund-details',
+      limit: 1,
+      pagination: false,
+      depth: 0,
+    })
+
+    const doc = result.docs?.[0] as
+      | {
+          data?: Record<string, unknown> | unknown
+          textFields?: Array<{ key?: unknown; value?: unknown }> | null
+        }
+      | undefined
+    if (!doc) return null
+
+    const data = (doc.data && typeof doc.data === 'object' ? doc.data : {}) as Record<string, unknown>
+
+    const getTextFieldValue = (key: string): string | null => {
+      if (!Array.isArray(doc.textFields)) return null
+      const match = doc.textFields.find((entry) => entry?.key === key)
+      if (typeof match?.value === 'string' && match.value.trim()) return match.value.trim()
+      return null
+    }
+
+    const first =
+      (typeof data.introQuotePrimary === 'string' && data.introQuotePrimary.trim()) ||
+      getTextFieldValue('introQuotePrimary') ||
+      ''
+    const secondRaw =
+      (typeof data.introQuoteSecondary === 'string' && data.introQuoteSecondary.trim()) ||
+      getTextFieldValue('introQuoteSecondary') ||
+      null
+
+    if (!first) return null
+    return {
+      first,
+      second: secondRaw,
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function getCMSFundShareClassMeta(): Promise<FundShareClassMeta | null> {
   try {
     const payload = await getPayload({ config: configPromise })
@@ -362,5 +410,98 @@ export async function getCMSFundDetails(): Promise<FundDetailItem[] | null> {
     return details.length > 0 ? details : null
   } catch {
     return null
+  }
+}
+
+function resolveWixImageUrl(value: string): string {
+  if (!value) return ''
+  if (value.startsWith('http://') || value.startsWith('https://')) return value
+
+  if (value.startsWith('wix:image://')) {
+    const parts = value.replace('wix:image://v1/', '').split('/')
+    const fileId = parts[0]
+    if (fileId) {
+      return `https://static.wixstatic.com/media/${fileId}`
+    }
+  }
+
+  if (value.includes('.')) {
+    return `https://static.wixstatic.com/media/${value}`
+  }
+
+  return value
+}
+
+function getTextFieldValue(
+  textFields: Array<{ key?: unknown; value?: unknown }> | null | undefined,
+  key: string,
+): string | null {
+  if (!Array.isArray(textFields)) return null
+  const match = textFields.find((entry) => entry?.key === key)
+  if (typeof match?.value === 'string' && match.value.trim()) return match.value.trim()
+  return null
+}
+
+export async function getCMSMegatrendImageVariantsByTitle(): Promise<
+  Record<string, { blue?: string; white?: string }>
+> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const [detailResult, datasetResult] = await Promise.all([
+      payload.find({
+        collection: 'wix-megatrends-detail',
+        limit: 200,
+        pagination: false,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'wix-megatrend-dataset',
+        limit: 200,
+        pagination: false,
+        depth: 0,
+      }),
+    ])
+
+    const byTitle: Record<string, { blue?: string; white?: string }> = {}
+
+    for (const doc of detailResult.docs as Array<{
+      data?: Record<string, unknown> | unknown
+      textFields?: Array<{ key?: unknown; value?: unknown }> | null
+    }>) {
+      const data = (doc?.data && typeof doc.data === 'object' ? doc.data : {}) as Record<string, unknown>
+      const title =
+        (typeof data.title_fld === 'string' && data.title_fld.trim()) ||
+        getTextFieldValue(doc.textFields, 'title_fld')
+      const imageSource =
+        (typeof data.image_fld === 'string' && data.image_fld.trim()) ||
+        getTextFieldValue(doc.textFields, 'image_fld')
+      if (!title || !imageSource) continue
+
+      const resolved = resolveWixImageUrl(imageSource)
+      if (!resolved) continue
+      byTitle[title] = { ...(byTitle[title] ?? {}), blue: resolved }
+    }
+
+    for (const doc of datasetResult.docs as Array<{
+      data?: Record<string, unknown> | unknown
+      textFields?: Array<{ key?: unknown; value?: unknown }> | null
+    }>) {
+      const data = (doc?.data && typeof doc.data === 'object' ? doc.data : {}) as Record<string, unknown>
+      const title =
+        (typeof data.title_fld === 'string' && data.title_fld.trim()) ||
+        getTextFieldValue(doc.textFields, 'title_fld')
+      const imageSource =
+        (typeof data.image_fld === 'string' && data.image_fld.trim()) ||
+        getTextFieldValue(doc.textFields, 'image_fld')
+      if (!title || !imageSource) continue
+
+      const resolved = resolveWixImageUrl(imageSource)
+      if (!resolved) continue
+      byTitle[title] = { ...(byTitle[title] ?? {}), white: resolved }
+    }
+
+    return byTitle
+  } catch {
+    return {}
   }
 }

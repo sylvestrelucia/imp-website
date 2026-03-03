@@ -1,6 +1,7 @@
-import { getCMSPageBySlug } from '../_components/getCMSPageBySlug'
+import { getCMSMegatrendImageVariantsByTitle, getCMSPageBySlug } from '../_components/getCMSPageBySlug'
 import { CMSPageContent } from '../_components/CMSPageContent'
 import { PageHero } from '../_components/PageHero'
+import { MegatrendDetailSection } from '../_components/MegatrendDetailSection'
 
 const megatrends = [
   {
@@ -107,6 +108,8 @@ function getMegatrendAnchor(title: string): string {
 }
 
 export default async function MegatrendsPage() {
+  const trendImageVariantsByTitle = await getCMSMegatrendImageVariantsByTitle()
+
   const cmsPage = await getCMSPageBySlug('megatrends')
   if (cmsPage) {
     return <CMSPageContent page={cmsPage as never} />
@@ -121,51 +124,42 @@ export default async function MegatrendsPage() {
         />
 
         {/* Intro */}
-        <section className="container py-16 md:py-20">
-          <h2 className="text-[26px] leading-[1.3] text-[#0b1035] mb-4">
-            Investing at the Intersection of Innovation, Demographics, and Sustainability
-          </h2>
-          <p className="text-[#2b3045] leading-relaxed max-w-4xl mb-4">
-            At the heart of the IMP Global Megatrend Umbrella Fund is our deep conviction in the power of structural change. We focus on six transformational megatrends that are reshaping the global economy, society, and our daily lives.
-          </p>
-          <p className="text-[#5f6477] leading-relaxed max-w-4xl">
-            These trends are not fleeting fads; they are multi-decade forces that cut across sectors and geographies &mdash; creating durable, secular growth opportunities for companies aligned with them.
-          </p>
+        <section className="bg-secondary py-20 md:py-24">
+          <div className="container">
+            <div className="max-w-5xl space-y-6">
+              <p className="text-white font-display font-medium leading-relaxed text-[18px] md:text-[19px]">
+                Investing at the Intersection of Innovation, Demographics, and Sustainability
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                <blockquote className="border-l border-primary-light pl-8 pr-8 text-[#62A8FF] font-thin leading-relaxed text-[18px] md:text-[19px]">
+                  At the heart of the IMP Global Megatrend Umbrella Fund is our deep conviction in
+                  the power of structural change. We focus on six transformational megatrends that
+                  are reshaping the global economy, society, and our daily lives.
+                </blockquote>
+                <blockquote className="border-l border-primary-light pl-8 pr-8 text-[#62A8FF] font-thin leading-relaxed text-[18px] md:text-[19px]">
+                  These trends are not fleeting fads; they are multi-decade forces that cut across
+                  sectors and geographies - creating durable, secular growth opportunities for
+                  companies aligned with them.
+                </blockquote>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* Megatrend sections */}
-        <div className="container pb-16 md:pb-20 space-y-16">
+        <div className="container pb-16 md:pb-20">
           {megatrends.map((trend, idx) => (
-            <section
+            <MegatrendDetailSection
               id={getMegatrendAnchor(trend.title)}
               key={trend.title}
-              className="grid md:grid-cols-[80px_1fr] gap-6 md:gap-8 scroll-mt-24"
-            >
-              <div className="flex items-start">
-                <img
-                  src={trend.icon}
-                  alt=""
-                  className="w-[60px] h-[60px] object-contain"
-                />
-              </div>
-              <div>
-                <p className="text-[12px] text-[#5f6477] uppercase tracking-[0.15em] mb-2">
-                  Megatrend {idx + 1}
-                </p>
-                <h2 className="text-[26px] leading-[1.2] text-[#0b1035] mb-2">
-                  {trend.title}
-                </h2>
-                <p className="text-[#0040ff] text-[17px] mb-4">{trend.subtitle}</p>
-                <div className="space-y-3 text-[#2b3045] leading-relaxed">
-                  {trend.description.map((para, i) => (
-                    <p key={i}>{para}</p>
-                  ))}
-                </div>
-                <p className="mt-5 text-[#2b3045] leading-relaxed font-medium">
-                  {trend.conclusion}
-                </p>
-              </div>
-            </section>
+              index={idx}
+              trend={{
+                ...trend,
+                icon: trendImageVariantsByTitle[trend.title]?.blue ?? '',
+              }}
+              reverse={idx % 2 === 1}
+              noTopBorder={idx === 0}
+            />
           ))}
         </div>
 
