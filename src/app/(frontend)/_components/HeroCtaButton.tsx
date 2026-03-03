@@ -18,7 +18,7 @@ export function HeroCtaButton({ href, label }: HeroCtaButtonProps) {
       asChild
       variant="heroCta"
       size="clear"
-      className="px-4 md:px-5 bg-white text-primary-light border-transparent normal-case tracking-normal text-[16px] font-medium"
+      className="px-4 md:px-5 bg-white text-black border-transparent normal-case tracking-normal text-[16px] font-medium"
     >
       <Link
         href={href}
@@ -29,13 +29,15 @@ export function HeroCtaButton({ href, label }: HeroCtaButtonProps) {
         onFocus={() => setHovered(true)}
         onBlur={() => setHovered(false)}
       >
-        <AnimatedIcon
-          name="trendingUp"
-          size={16}
-          className="shrink-0 text-primary-light"
-          animate={hovered}
-        />
-        {label}
+        <span className="inline-flex items-center gap-2.5 text-black mix-blend-multiply">
+          <AnimatedIcon
+            name="trendingUp"
+            size={16}
+            className="shrink-0 text-black"
+            animate={hovered}
+          />
+          <span>{label}</span>
+        </span>
       </Link>
     </Button>
   )

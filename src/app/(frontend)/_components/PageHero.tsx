@@ -67,9 +67,9 @@ export function PageHero({
   subtitle,
   children,
   palette = {
-    color1: '#2B3DEA',
-    color2: '#782BEA',
-    color3: '#2B9DEA',
+    color1: 'oklch(0.46 0.16 300)',
+    color2: 'oklch(0.46 0.13 334)',
+    color3: 'oklch(0.46 0.11 278)',
   },
   sectionClassName,
   containerClassName,

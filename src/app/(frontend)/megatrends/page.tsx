@@ -117,7 +117,7 @@ export default async function MegatrendsPage() {
         <PageHero
           title="The Six Megatrends Powering Our Portfolio"
           subtitle="Megatrends focus on a deep, structural force reshaping the global economy. These themes are enduring, transformative, and global."
-          palette={{ color1: '#2B3DEA', color2: '#2BBCEA', color3: '#2BEAD8' }}
+          palette={{ color1: 'oklch(0.47 0.13 154)', color2: 'oklch(0.47 0.12 174)', color3: 'oklch(0.47 0.10 136)' }}
         />
 
         {/* Intro */}

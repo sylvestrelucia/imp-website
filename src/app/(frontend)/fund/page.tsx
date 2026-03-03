@@ -123,13 +123,13 @@ export default async function FundPage() {
         <PageHero
           title={heroTitle}
           subtitle={heroSubtitle}
-          palette={{ color1: '#2B3DEA', color2: '#592BEA', color3: '#2B7DEA' }}
+          palette={{ color1: 'oklch(0.45 0.13 36)', color2: 'oklch(0.45 0.12 58)', color3: 'oklch(0.45 0.11 20)' }}
           subtitleClassName="text-white text-[19px] md:text-[21px] max-w-lg font-light"
           sectionClassName="relative overflow-hidden"
         />
 
         {introText ? (
-          <section className="bg-secondary py-14 md:py-16">
+          <section className="bg-secondary py-20 md:py-24">
             <div className="container">
               <div className="max-w-5xl">
                 <blockquote className="border-l-2 border-primary-light pl-8 pr-8 text-white italic font-thin leading-relaxed text-[18px] md:text-[19px] whitespace-pre-line">

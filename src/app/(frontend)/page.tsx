@@ -31,7 +31,7 @@ export default async function HomePage() {
       <HeroSection />
       <RegulatoryStrip />
       <main className="bg-white">
-        <section className="border-t border-[#e8ecf4] bg-white py-12 md:py-14">
+        <section className="bg-white pt-8 pb-0 md:pt-10 md:pb-0">
           <div className="container">
             <ExploreMegatrendsCard />
           </div>
@@ -44,6 +44,8 @@ export default async function HomePage() {
                 detailsHref={`/megatrends#${getMegatrendAnchor(trend.title)}`}
                 detailsIcon="trendingUp"
                 reverse={i % 2 === 1}
+                noTopBorder={i === 0}
+                animationDelayMs={i * 90}
               />
             </div>
           )

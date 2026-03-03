@@ -1,19 +1,16 @@
-import { getCMSPageBySlug } from '../_components/getCMSPageBySlug'
-import { CMSPageContent } from '../_components/CMSPageContent'
 import { PageHero } from '../_components/PageHero'
 
 export default async function NewsletterSubscriptionPage() {
-  const cmsPage = await getCMSPageBySlug('newsletter-subscription')
-  if (cmsPage) {
-    return <CMSPageContent page={cmsPage as never} />
-  }
-
   return (
     <main className="bg-white text-[#0b1035]">
         <PageHero
           title="Newsletter Subscription"
           subtitle="Receive periodic updates on market developments, fund news, and our latest perspectives on global megatrends."
-          palette={{ color1: '#2B3DEA', color2: '#EA2B7D', color3: '#2BBCEA' }}
+          palette={{
+            color1: 'oklch(0.46 0.15 350)',
+            color2: 'oklch(0.46 0.13 18)',
+            color3: 'oklch(0.46 0.11 322)',
+          }}
           subtitleClassName="text-white/85 text-[16px] md:text-[18px] leading-relaxed max-w-2xl"
         />
 

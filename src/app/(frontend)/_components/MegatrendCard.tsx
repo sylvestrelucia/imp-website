@@ -1,4 +1,7 @@
+'use client'
+
 import Image from 'next/image'
+import { useEffect, useRef, useState } from 'react'
 import type { AnimatedIconName } from './AnimatedIcon'
 import { ActionLinkButton } from './ActionLinkButton'
 import { TickerBadge } from './TickerBadge'
@@ -11,6 +14,8 @@ interface MegatrendCardProps {
   reverse?: boolean
   detailsHref?: string
   detailsIcon?: AnimatedIconName
+  noTopBorder?: boolean
+  animationDelayMs?: number
 }
 
 export function MegatrendCard({
@@ -21,9 +26,39 @@ export function MegatrendCard({
   reverse,
   detailsHref = '/megatrends',
   detailsIcon = 'arrowUpRight',
+  noTopBorder = false,
+  animationDelayMs = 0,
 }: MegatrendCardProps) {
+  const cardRef = useRef<HTMLElement | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const element = cardRef.current
+    if (!element) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries
+        if (!entry?.isIntersecting) return
+        setIsVisible(true)
+        observer.disconnect()
+      },
+      {
+        threshold: 0.15,
+        rootMargin: '0px 0px -10% 0px',
+      },
+    )
+
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+
   return (
-    <article className="border-t border-[#d9def0] pt-16 md:pt-20 pb-0">
+    <article
+      ref={cardRef}
+      className={`${noTopBorder ? '' : 'border-t border-[#d9def0]'} pt-16 md:pt-20 pb-0 transition-[opacity,transform] duration-700 ease-out will-change-transform motion-reduce:transition-none motion-reduce:transform-none motion-reduce:opacity-100 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+      style={{ transitionDelay: `${animationDelayMs}ms` }}
+    >
       <div className="container">
         <div
           className={`grid lg:grid-cols-2 gap-10 lg:gap-16 items-stretch ${reverse ? 'lg:direction-rtl' : ''}`}

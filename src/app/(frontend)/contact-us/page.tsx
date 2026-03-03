@@ -13,7 +13,7 @@ export default async function ContactPage() {
         <PageHero
           title="Get In Touch"
           titleClassName="max-w-none"
-          palette={{ color1: '#2B3DEA', color2: '#2BBCEA', color3: '#2BEA59' }}
+          palette={{ color1: 'oklch(0.47 0.13 150)', color2: 'oklch(0.47 0.11 128)', color3: 'oklch(0.47 0.10 176)' }}
         />
 
         <div className="container py-16 md:py-20 grid lg:grid-cols-[1fr_380px] gap-12">

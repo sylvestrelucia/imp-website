@@ -10,6 +10,93 @@ const hexToRgb = hex => {
   return [parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255];
 };
 
+const rgbStringToRgb = value => {
+  const match = value.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
+  if (!match) return null;
+  return [
+    Math.max(0, Math.min(255, Number(match[1]))) / 255,
+    Math.max(0, Math.min(255, Number(match[2]))) / 255,
+    Math.max(0, Math.min(255, Number(match[3]))) / 255
+  ];
+};
+
+const parsePercentOrUnit = raw => {
+  const value = raw.trim();
+  if (value.endsWith('%')) return Math.max(0, Math.min(1, Number(value.slice(0, -1)) / 100));
+  return Number(value);
+};
+
+const linearToSrgb = value => (
+  value <= 0.0031308 ? 12.92 * value : (1.055 * (value ** (1 / 2.4))) - 0.055
+);
+
+const parseOklchToRgb = value => {
+  const normalized = value.trim().replace(/,/g, ' ');
+  const match = normalized.match(
+    /^oklch\(\s*([+-]?\d*\.?\d+%?)\s+([+-]?\d*\.?\d+)\s+([+-]?\d*\.?\d+)(deg|rad|turn)?(?:\s*\/\s*[+-]?\d*\.?\d+%?)?\s*\)$/i
+  );
+  if (!match) return null;
+
+  const lRaw = parsePercentOrUnit(match[1]);
+  const c = Number(match[2]);
+  const hRaw = Number(match[3]);
+  const hUnit = (match[4] || 'deg').toLowerCase();
+
+  if (!Number.isFinite(lRaw) || !Number.isFinite(c) || !Number.isFinite(hRaw)) return null;
+
+  const l = match[1].includes('%') ? lRaw : Math.max(0, Math.min(1, lRaw));
+  const hueRad =
+    hUnit === 'rad' ? hRaw :
+      hUnit === 'turn' ? hRaw * Math.PI * 2 :
+        (hRaw * Math.PI) / 180;
+
+  const a = c * Math.cos(hueRad);
+  const b = c * Math.sin(hueRad);
+
+  const lComp = l + (0.3963377774 * a) + (0.2158037573 * b);
+  const mComp = l - (0.1055613458 * a) - (0.0638541728 * b);
+  const sComp = l - (0.0894841775 * a) - (1.291485548 * b);
+
+  const lLinear = lComp ** 3;
+  const mLinear = mComp ** 3;
+  const sLinear = sComp ** 3;
+
+  const rLinear = (4.0767416621 * lLinear) - (3.3077115913 * mLinear) + (0.2309699292 * sLinear);
+  const gLinear = (-1.2684380046 * lLinear) + (2.6097574011 * mLinear) - (0.3413193965 * sLinear);
+  const bLinear = (-0.0041960863 * lLinear) - (0.7034186147 * mLinear) + (1.707614701 * sLinear);
+
+  return [
+    Math.max(0, Math.min(1, linearToSrgb(rLinear))),
+    Math.max(0, Math.min(1, linearToSrgb(gLinear))),
+    Math.max(0, Math.min(1, linearToSrgb(bLinear)))
+  ];
+};
+
+const cssColorToRgb = color => {
+  if (typeof color !== 'string' || color.trim().length === 0) return hexToRgb('#2B3DEA');
+
+  const trimmed = color.trim();
+  const hexMatch = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.test(trimmed);
+  if (hexMatch) return hexToRgb(trimmed);
+
+  const oklchRgb = parseOklchToRgb(trimmed);
+  if (oklchRgb) return oklchRgb;
+
+  if (typeof document === 'undefined') return hexToRgb('#2B3DEA');
+  const ctx = document.createElement('canvas').getContext('2d');
+  if (!ctx) return hexToRgb('#2B3DEA');
+
+  const fallback = '#2B3DEA';
+  ctx.fillStyle = fallback;
+  ctx.fillStyle = trimmed;
+  const resolved = ctx.fillStyle;
+
+  if (typeof resolved !== 'string') return hexToRgb(fallback);
+  if (resolved.startsWith('#')) return hexToRgb(resolved);
+  const rgb = rgbStringToRgb(resolved);
+  return rgb || hexToRgb(fallback);
+};
+
 const vertex = `#version 300 es
 in vec2 position;
 void main() {
@@ -160,9 +247,9 @@ const ensureSharedRuntime = initial => {
       uSaturation: { value: initial.saturation },
       uCenterOffset: { value: new Float32Array([initial.centerX, initial.centerY]) },
       uZoom: { value: initial.zoom },
-      uColor1: { value: new Float32Array(hexToRgb(initial.color1)) },
-      uColor2: { value: new Float32Array(hexToRgb(initial.color2)) },
-      uColor3: { value: new Float32Array(hexToRgb(initial.color3)) }
+      uColor1: { value: new Float32Array(cssColorToRgb(initial.color1)) },
+      uColor2: { value: new Float32Array(cssColorToRgb(initial.color2)) },
+      uColor3: { value: new Float32Array(cssColorToRgb(initial.color3)) }
     }
   });
   const mesh = new Mesh(gl, { geometry, program });
@@ -178,9 +265,9 @@ const ensureSharedRuntime = initial => {
     accumulatedTimeSeconds: 0,
     attachCount: 0,
     baseWarpSpeed: initial.warpSpeed,
-    targetColor1: hexToRgb(initial.color1),
-    targetColor2: hexToRgb(initial.color2),
-    targetColor3: hexToRgb(initial.color3)
+    targetColor1: cssColorToRgb(initial.color1),
+    targetColor2: cssColorToRgb(initial.color2),
+    targetColor3: cssColorToRgb(initial.color3)
   };
 
   return sharedRuntime;
@@ -219,9 +306,9 @@ const applyRuntimeTargets = (runtime, settings) => {
   uniforms.uZoom.value = settings.zoom;
 
   runtime.baseWarpSpeed = settings.warpSpeed;
-  runtime.targetColor1 = hexToRgb(settings.color1);
-  runtime.targetColor2 = hexToRgb(settings.color2);
-  runtime.targetColor3 = hexToRgb(settings.color3);
+  runtime.targetColor1 = cssColorToRgb(settings.color1);
+  runtime.targetColor2 = cssColorToRgb(settings.color2);
+  runtime.targetColor3 = cssColorToRgb(settings.color3);
 };
 
 const startRuntimeLoop = runtime => {
