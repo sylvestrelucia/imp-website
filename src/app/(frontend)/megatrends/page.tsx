@@ -2,6 +2,7 @@ import { getCMSMegatrendImageVariantsByTitle, getCMSPageBySlug } from '../_compo
 import { CMSPageContent } from '../_components/CMSPageContent'
 import { PageHero } from '../_components/PageHero'
 import { MegatrendDetailSection } from '../_components/MegatrendDetailSection'
+import { ActionLinkButton } from '../_components/ActionLinkButton'
 
 const megatrends = [
   {
@@ -147,7 +148,7 @@ export default async function MegatrendsPage() {
         </section>
 
         {/* Megatrend sections */}
-        <div className="container pb-16 md:pb-20">
+        <div className="pb-16 md:pb-20">
           {megatrends.map((trend, idx) => (
             <MegatrendDetailSection
               id={getMegatrendAnchor(trend.title)}
@@ -161,6 +162,26 @@ export default async function MegatrendsPage() {
               noTopBorder={idx === 0}
             />
           ))}
+
+          <section className="border-t border-[#d9def0] pt-10 pb-0 md:pt-12 md:pb-0">
+            <div className="container">
+              <h3 className="mb-5 text-center text-[20px] md:text-[22px] text-[#0b1035]">Related Links</h3>
+              <div className="flex flex-wrap items-center justify-center gap-4">
+                <ActionLinkButton
+                  href="/portfolio-strategy"
+                  label="Explore our Portfolio"
+                  icon="trendingUp"
+                  buttonVariant="outlineMuted"
+                />
+                <ActionLinkButton
+                  href="/portfolio-strategy"
+                  label="How we invest"
+                  icon="chartLine"
+                  buttonVariant="outlineMuted"
+                />
+              </div>
+            </div>
+          </section>
         </div>
 
         {/* Thematic Framework */}
