@@ -104,6 +104,20 @@ void main(){
 let sharedRuntime = null;
 
 const lerp = (a, b, t) => a + (b - a) * t;
+const COLOR_LERP_FACTOR = 0.06;
+const WARP_SPEED_LERP_FACTOR = 0.14;
+const TRANSITION_WARP_SPEED_FACTOR = 0.78;
+const MAX_FRAME_DELTA_SECONDS = 1 / 30;
+
+const isPageTransitionActive = () => {
+  const region = document.querySelector('.page-transition');
+  if (!region) return false;
+  return (
+    region.classList.contains('page-transition-leave') ||
+    region.classList.contains('page-transition-enter-start') ||
+    region.classList.contains('page-transition-enter')
+  );
+};
 
 const ensureSharedRuntime = initial => {
   if (sharedRuntime) return sharedRuntime;
@@ -160,8 +174,10 @@ const ensureSharedRuntime = initial => {
     program,
     mesh,
     raf: 0,
-    startTimeMs: null,
+    lastFrameTs: null,
+    accumulatedTimeSeconds: 0,
     attachCount: 0,
+    baseWarpSpeed: initial.warpSpeed,
     targetColor1: hexToRgb(initial.color1),
     targetColor2: hexToRgb(initial.color2),
     targetColor3: hexToRgb(initial.color3)
@@ -187,7 +203,6 @@ const applyRuntimeTargets = (runtime, settings) => {
   uniforms.uColorBalance.value = settings.colorBalance;
   uniforms.uWarpStrength.value = settings.warpStrength;
   uniforms.uWarpFrequency.value = settings.warpFrequency;
-  uniforms.uWarpSpeed.value = settings.warpSpeed;
   uniforms.uWarpAmplitude.value = settings.warpAmplitude;
   uniforms.uBlendAngle.value = settings.blendAngle;
   uniforms.uBlendSoftness.value = settings.blendSoftness;
@@ -203,6 +218,7 @@ const applyRuntimeTargets = (runtime, settings) => {
   uniforms.uCenterOffset.value[1] = settings.centerY;
   uniforms.uZoom.value = settings.zoom;
 
+  runtime.baseWarpSpeed = settings.warpSpeed;
   runtime.targetColor1 = hexToRgb(settings.color1);
   runtime.targetColor2 = hexToRgb(settings.color2);
   runtime.targetColor3 = hexToRgb(settings.color3);
@@ -212,16 +228,32 @@ const startRuntimeLoop = runtime => {
   if (runtime.raf) return;
 
   const loop = t => {
-    if (runtime.startTimeMs === null) runtime.startTimeMs = t;
-    runtime.program.uniforms.iTime.value = (t - runtime.startTimeMs) * 0.001;
+    if (runtime.lastFrameTs === null) {
+      runtime.lastFrameTs = t;
+    }
+
+    const rawDeltaSeconds = Math.max(0, (t - runtime.lastFrameTs) * 0.001);
+    const clampedDeltaSeconds = Math.min(rawDeltaSeconds, MAX_FRAME_DELTA_SECONDS);
+    runtime.lastFrameTs = t;
+    runtime.accumulatedTimeSeconds += clampedDeltaSeconds;
+    runtime.program.uniforms.iTime.value = runtime.accumulatedTimeSeconds;
+
+    const desiredWarpSpeed = isPageTransitionActive()
+      ? runtime.baseWarpSpeed * TRANSITION_WARP_SPEED_FACTOR
+      : runtime.baseWarpSpeed;
+    runtime.program.uniforms.uWarpSpeed.value = lerp(
+      runtime.program.uniforms.uWarpSpeed.value,
+      desiredWarpSpeed,
+      WARP_SPEED_LERP_FACTOR
+    );
 
     const color1 = runtime.program.uniforms.uColor1.value;
     const color2 = runtime.program.uniforms.uColor2.value;
     const color3 = runtime.program.uniforms.uColor3.value;
     for (let i = 0; i < 3; i += 1) {
-      color1[i] = lerp(color1[i], runtime.targetColor1[i], 0.12);
-      color2[i] = lerp(color2[i], runtime.targetColor2[i], 0.12);
-      color3[i] = lerp(color3[i], runtime.targetColor3[i], 0.12);
+      color1[i] = lerp(color1[i], runtime.targetColor1[i], COLOR_LERP_FACTOR);
+      color2[i] = lerp(color2[i], runtime.targetColor2[i], COLOR_LERP_FACTOR);
+      color3[i] = lerp(color3[i], runtime.targetColor3[i], COLOR_LERP_FACTOR);
     }
 
     runtime.renderer.render({ scene: runtime.mesh });
@@ -259,6 +291,23 @@ const Grainient = ({
   const containerRef = useRef(null);
   const runtimeRef = useRef(null);
   const resizeObserverRef = useRef(null);
+
+  useEffect(() => {
+    const runtime = runtimeRef.current || sharedRuntime;
+    if (!runtime) return;
+
+    const resetFrameClock = () => {
+      runtime.lastFrameTs = null;
+    };
+
+    document.addEventListener('visibilitychange', resetFrameClock);
+    window.addEventListener('focus', resetFrameClock);
+
+    return () => {
+      document.removeEventListener('visibilitychange', resetFrameClock);
+      window.removeEventListener('focus', resetFrameClock);
+    };
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;

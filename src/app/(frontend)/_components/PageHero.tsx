@@ -79,7 +79,7 @@ export function PageHero({
   return (
     <section
       className={cn(
-        'relative overflow-hidden bg-[#2b3dea] pt-40 pb-16 md:pt-48 md:pb-20 -mb-px',
+        'relative min-h-screen overflow-hidden bg-[#2b3dea] pt-40 pb-16 md:pt-48 md:pb-20 -mb-px',
         sectionClassName,
       )}
       data-transition-skip="true"
@@ -110,6 +110,17 @@ export function PageHero({
           </>
         ) : null}
         {children}
+      </div>
+
+      <div
+        className="pointer-events-none absolute bottom-6 left-1/2 z-10 -translate-x-1/2 text-white/75 animate-bounce"
+        data-transition-force="true"
+        aria-hidden="true"
+      >
+        <svg width="22" height="30" viewBox="0 0 22 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 8L11 15L18 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M4 16L11 23L18 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </div>
     </section>
   )
