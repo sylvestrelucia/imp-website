@@ -24,3 +24,343 @@ export async function getCMSPageBySlug(slug: string) {
 
   return result.docs?.[0] ?? null
 }
+
+type HeroCopy = {
+  title?: string
+  subtitle?: string
+}
+
+type ShareClassIdentity = 'usd' | 'chf'
+type FundDetailIcon = 'circleDollar' | 'boxes' | 'mapPinCheck' | 'shieldCheck' | 'graduationCap' | 'trendingUp'
+
+export type FundShareClassMeta = Record<
+  ShareClassIdentity,
+  {
+    isinLabel: string
+    isinValue: string
+    wknLabel: string
+    wknValue: string
+    bloombergLabel: string
+    bloombergValue: string
+  }
+>
+
+export type FundDetailItem = {
+  label: string
+  value: string
+  icon: FundDetailIcon
+}
+
+function richTextToParagraphs(richText: unknown): string[] {
+  const root = (richText as { root?: { children?: Array<Record<string, unknown>> } } | null)?.root
+  const children = Array.isArray(root?.children) ? root.children : []
+
+  return children
+    .map((node) => {
+      const textChildren = Array.isArray(node?.children)
+        ? (node.children as Array<Record<string, unknown>>)
+        : []
+
+      return textChildren
+        .filter((child) => child?.type === 'text' && typeof child.text === 'string')
+        .map((child) => child.text as string)
+        .join('')
+        .replace(/\s+/g, ' ')
+        .trim()
+    })
+    .filter(Boolean)
+}
+
+function stripHtml(value: string): string {
+  return value
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function extractHeroCopyFromRichText(richText: unknown): HeroCopy | null {
+  const paragraphs = richTextToParagraphs(richText)
+  if (paragraphs.length === 0) return null
+
+  // Prefer explicit first-line / second-line split if present.
+  if (paragraphs.length >= 2) {
+    return { title: paragraphs[0], subtitle: paragraphs[1] }
+  }
+
+  const first = paragraphs[0] ?? ''
+  if (!first) return null
+
+  // Handle single-line hero copy like:
+  // "The IMP ... Fund. Investing in the Forces That Shape Tomorrow."
+  const sentenceSplit = first.match(/^(.*?\.)\s+(.+)$/)
+  if (sentenceSplit?.[1] && sentenceSplit[2]) {
+    return {
+      title: sentenceSplit[1].trim().replace(/\.+$/, ''),
+      subtitle: sentenceSplit[2].trim().replace(/\.+$/, ''),
+    }
+  }
+
+  return { title: first.replace(/\.+$/, '') }
+}
+
+export async function getCMSHeroCopyBySlug(slug: string): Promise<HeroCopy | null> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'pages',
+      limit: 1,
+      pagination: false,
+      depth: 0,
+      where: {
+        slug: { equals: slug },
+      },
+    })
+
+    const page = result.docs?.[0]
+    if (!page?.hero) return null
+    return extractHeroCopyFromRichText(page.hero.richText)
+  } catch {
+    return null
+  }
+}
+
+export async function getCMSFirstContentSectionTextBySlug(slug: string): Promise<string | null> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'pages',
+      limit: 1,
+      pagination: false,
+      depth: 0,
+      where: {
+        slug: { equals: slug },
+      },
+    })
+
+    const page = result.docs?.[0] as { layout?: unknown[] } | undefined
+    if (!page || !Array.isArray(page.layout)) return null
+
+    for (const block of page.layout) {
+      const blockRecord = (block ?? {}) as Record<string, unknown>
+      if (blockRecord.blockType !== 'content') continue
+
+      const columns = Array.isArray(blockRecord.columns) ? blockRecord.columns : []
+      for (const column of columns) {
+        const columnRecord = (column ?? {}) as Record<string, unknown>
+        const paragraphs = richTextToParagraphs(columnRecord.richText)
+        if (paragraphs.length > 0) {
+          return paragraphs.join('\n\n')
+        }
+      }
+    }
+
+    return null
+  } catch {
+    return null
+  }
+}
+
+export async function getCMSContentSectionsBySlug(slug: string): Promise<string[]> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'pages',
+      limit: 1,
+      pagination: false,
+      depth: 0,
+      where: {
+        slug: { equals: slug },
+      },
+    })
+
+    const page = result.docs?.[0] as { layout?: unknown[] } | undefined
+    if (!page || !Array.isArray(page.layout)) return []
+
+    const sections: string[] = []
+
+    for (const block of page.layout) {
+      const blockRecord = (block ?? {}) as Record<string, unknown>
+      if (blockRecord.blockType !== 'content') continue
+
+      const columns = Array.isArray(blockRecord.columns) ? blockRecord.columns : []
+      const columnParagraphs: string[] = []
+
+      for (const column of columns) {
+        const columnRecord = (column ?? {}) as Record<string, unknown>
+        const paragraphs = richTextToParagraphs(columnRecord.richText)
+        if (paragraphs.length > 0) {
+          columnParagraphs.push(paragraphs.join('\n\n'))
+        }
+      }
+
+      if (columnParagraphs.length > 0) {
+        sections.push(columnParagraphs.join('\n\n'))
+      }
+    }
+
+    return sections
+  } catch {
+    return []
+  }
+}
+
+export async function getCMSFundShareClassMeta(): Promise<FundShareClassMeta | null> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'wix-fund-attributes',
+      limit: 200,
+      pagination: false,
+      depth: 0,
+    })
+
+    const initial: FundShareClassMeta = {
+      usd: {
+        isinLabel: 'ISIN',
+        isinValue: '',
+        wknLabel: 'WKN',
+        wknValue: '',
+        bloombergLabel: 'Bloomberg',
+        bloombergValue: '',
+      },
+      chf: {
+        isinLabel: 'ISIN',
+        isinValue: '',
+        wknLabel: 'WKN',
+        wknValue: '',
+        bloombergLabel: 'Bloomberg',
+        bloombergValue: '',
+      },
+    }
+
+    const docs = result.docs as Array<{
+      data?: Record<string, unknown> | unknown
+      textFields?: Array<{ key?: unknown; value?: unknown }> | null
+    }>
+
+    const getTextFieldValue = (
+      textFields: Array<{ key?: unknown; value?: unknown }> | null | undefined,
+      key: string,
+    ): string | null => {
+      if (!Array.isArray(textFields)) return null
+      const match = textFields.find((entry) => entry?.key === key)
+      if (typeof match?.value === 'string' && match.value.trim()) return match.value
+      return null
+    }
+
+    for (const doc of docs) {
+      const data = (doc?.data && typeof doc.data === 'object' ? doc.data : {}) as Record<string, unknown>
+
+      const titleRaw =
+        (typeof data.title_fld === 'string' ? data.title_fld : null) ??
+        getTextFieldValue(doc.textFields, 'title_fld')
+      const descriptionRaw =
+        (typeof data.description_fld === 'string' ? data.description_fld : null) ??
+        getTextFieldValue(doc.textFields, 'description_fld')
+
+      if (!titleRaw || !descriptionRaw) continue
+
+      const title = titleRaw.trim()
+      const value = stripHtml(descriptionRaw)
+      if (!title || !value) continue
+
+      const normalizedTitle = title.toLowerCase()
+      let shareClass: ShareClassIdentity | null = null
+      if (normalizedTitle.includes('usd')) shareClass = 'usd'
+      if (normalizedTitle.includes('chf')) shareClass = 'chf'
+      if (!shareClass) continue
+
+      if (normalizedTitle.includes('isin')) {
+        initial[shareClass].isinLabel = title
+        initial[shareClass].isinValue = value
+      } else if (normalizedTitle.includes('wkn')) {
+        initial[shareClass].wknLabel = title
+        initial[shareClass].wknValue = value
+      } else if (normalizedTitle.includes('bloomberg')) {
+        initial[shareClass].bloombergLabel = title
+        initial[shareClass].bloombergValue = value
+      }
+    }
+
+    return initial
+  } catch {
+    return null
+  }
+}
+
+function parseFundDetailIcon(value: unknown): FundDetailIcon | null {
+  if (typeof value !== 'string') return null
+  const normalized = value.trim().toLowerCase()
+  if (!normalized) return null
+
+  if (normalized === 'circledollar' || normalized === 'circle-dollar' || normalized === 'circle_dollar')
+    return 'circleDollar'
+  if (normalized === 'boxes') return 'boxes'
+  if (normalized === 'mappincheck' || normalized === 'map-pin-check' || normalized === 'map_pin_check')
+    return 'mapPinCheck'
+  if (normalized === 'shieldcheck' || normalized === 'shield-check' || normalized === 'shield_check')
+    return 'shieldCheck'
+  if (
+    normalized === 'graduationcap' ||
+    normalized === 'graduation-cap' ||
+    normalized === 'graduation_cap' ||
+    normalized === 'graduation'
+  )
+    return 'graduationCap'
+  if (normalized === 'trendingup' || normalized === 'trending-up' || normalized === 'trending_up')
+    return 'trendingUp'
+
+  return null
+}
+
+export async function getCMSFundDetails(): Promise<FundDetailItem[] | null> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'wix-fund-attributes',
+      limit: 200,
+      pagination: false,
+      depth: 0,
+    })
+
+    const docs = result.docs as Array<{ data?: Record<string, unknown> | unknown }>
+    const byLabel = new Map<string, FundDetailItem>()
+
+    for (const doc of docs) {
+      const data = (doc?.data && typeof doc.data === 'object' ? doc.data : {}) as Record<string, unknown>
+      const titleRaw = typeof data.title_fld === 'string' ? data.title_fld.trim() : ''
+      const descriptionRaw = typeof data.description_fld === 'string' ? data.description_fld : ''
+      if (!titleRaw || !descriptionRaw) continue
+
+      const value = stripHtml(descriptionRaw)
+      if (!value) continue
+
+      const icon =
+        parseFundDetailIcon(data.icon_fld) ?? parseFundDetailIcon(data.icon) ?? parseFundDetailIcon(data.iconName)
+      if (!icon) continue
+
+      byLabel.set(titleRaw.toLowerCase(), {
+        label: titleRaw,
+        value,
+        icon,
+      })
+    }
+
+    const preferredOrder = [
+      'liquidity',
+      'asset classes',
+      'regulatory distribution',
+      'structure & jurisdiction',
+      'sfdr-classification',
+    ]
+
+    const details = preferredOrder
+      .map((label) => byLabel.get(label))
+      .filter((item): item is FundDetailItem => Boolean(item))
+
+    return details.length > 0 ? details : null
+  } catch {
+    return null
+  }
+}

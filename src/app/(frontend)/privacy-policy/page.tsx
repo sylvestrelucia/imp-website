@@ -13,6 +13,7 @@ export default async function PrivacyPage() {
         <PageHero
           title="Privacy Policy"
           subtitle="Data Protection Statement of MRB Fund Partners AG"
+          palette={{ color1: '#2B3DEA', color2: '#EA592B', color3: '#592BEA' }}
           subtitleClassName="max-w-none"
         />
 

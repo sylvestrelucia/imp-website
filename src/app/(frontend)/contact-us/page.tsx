@@ -10,7 +10,11 @@ export default async function ContactPage() {
 
   return (
     <main className="bg-white text-[#0b1035]">
-        <PageHero title="Get In Touch" titleClassName="max-w-none" />
+        <PageHero
+          title="Get In Touch"
+          titleClassName="max-w-none"
+          palette={{ color1: '#2B3DEA', color2: '#2BBCEA', color3: '#2BEA59' }}
+        />
 
         <div className="container py-16 md:py-20 grid lg:grid-cols-[1fr_380px] gap-12">
           {/* Form */}

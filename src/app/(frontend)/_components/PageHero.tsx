@@ -1,6 +1,7 @@
 import React from 'react'
 import { cn } from '@/utilities/ui'
 import { TypeSwapHeading } from './TypeSwapHeading'
+import { PageHeroSilkBackground, type PageHeroPalette } from './PageHeroSilkBackground'
 
 type PageHeroSubtitleProps = React.ComponentProps<'p'>
 
@@ -32,7 +33,10 @@ export function PageHeroMeta({
   separatorClassName,
 }: PageHeroMetaProps) {
   return (
-    <div className={cn('mt-6 flex flex-wrap items-center gap-4', className)}>
+    <div
+      className={cn('mt-6 flex flex-wrap items-center gap-4', className)}
+      data-transition-force="true"
+    >
       {items.map((item, index) => (
         <React.Fragment key={`hero-meta-${index}`}>
           <span className={cn('text-white text-[19px] md:text-[21px] leading-[1.6]', itemClassName)}>{item}</span>
@@ -51,6 +55,7 @@ type PageHeroProps = {
   title: React.ReactNode
   subtitle?: React.ReactNode
   children?: React.ReactNode
+  palette?: PageHeroPalette
   sectionClassName?: string
   containerClassName?: string
   titleClassName?: string
@@ -61,6 +66,11 @@ export function PageHero({
   title,
   subtitle,
   children,
+  palette = {
+    color1: '#2B3DEA',
+    color2: '#782BEA',
+    color3: '#2B9DEA',
+  },
   sectionClassName,
   containerClassName,
   titleClassName,
@@ -68,29 +78,37 @@ export function PageHero({
 }: PageHeroProps) {
   return (
     <section
-      className={cn('bg-[#2b3dea] pt-32 pb-16 md:pt-40 md:pb-20', sectionClassName)}
+      className={cn(
+        'relative overflow-hidden bg-[#2b3dea] pt-40 pb-16 md:pt-48 md:pb-20 -mb-px',
+        sectionClassName,
+      )}
       data-transition-skip="true"
     >
-      <div className={cn('container', containerClassName)}>
+      <PageHeroSilkBackground palette={palette} />
+      <div className={cn('container relative z-10', containerClassName)}>
         {typeof title === 'string' ? (
           <TypeSwapHeading
             text={title}
             className={cn(
-              'text-white text-[38px] md:text-[48px] leading-[1.12] tracking-tight max-w-3xl',
+              'text-white text-[38px] md:text-[48px] font-semibold leading-[1.12] tracking-tight max-w-3xl',
               titleClassName,
             )}
           />
         ) : (
           <h1
             className={cn(
-              'text-white text-[38px] md:text-[48px] leading-[1.12] tracking-tight max-w-3xl',
+              'text-white text-[38px] md:text-[48px] font-semibold leading-[1.12] tracking-tight max-w-3xl',
               titleClassName,
             )}
           >
             {title}
           </h1>
         )}
-        {subtitle ? <PageHeroSubtitle className={subtitleClassName}>{subtitle}</PageHeroSubtitle> : null}
+        {subtitle ? (
+          <>
+            <PageHeroSubtitle className={subtitleClassName}>{subtitle}</PageHeroSubtitle>
+          </>
+        ) : null}
         {children}
       </div>
     </section>

@@ -33,8 +33,9 @@ const desktopHeaderNav = [
 function renderHeaderMenuIcon(icon: HeaderMenuIcon, animate: boolean) {
   if (icon === 'home') return <AnimatedIcon name="home" size={16} className="shrink-0" animate={animate} />
   if (icon === 'fund')
-    return <AnimatedIcon name="circleDollar" size={16} className="shrink-0" animate={animate} />
-  if (icon === 'megatrends') return <AnimatedIcon name="earth" size={16} className="shrink-0" animate={animate} />
+    return <AnimatedIcon name="rocket" size={16} className="shrink-0" animate={animate} />
+  if (icon === 'megatrends')
+    return <AnimatedIcon name="telescope" size={16} className="shrink-0" animate={animate} />
   if (icon === 'portfolio') return <AnimatedIcon name="compass" size={16} className="shrink-0" animate={animate} />
   if (icon === 'performance')
     return <AnimatedIcon name="chartLine" size={16} className="shrink-0" animate={animate} />
@@ -99,9 +100,9 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`group [font-family:var(--font-display-regular)] inline-flex items-center justify-center whitespace-nowrap bg-transparent px-6 py-3 text-[15px] font-medium text-white border-t-[5px] transition-[border-top-width] duration-200 ${
+                      className={`group [font-family:var(--font-display-regular)] inline-flex flex-col xl:flex-row items-center justify-center whitespace-normal xl:whitespace-nowrap bg-transparent px-6 py-2 xl:py-3 text-[15px] font-medium text-white text-center gap-1 xl:gap-2 border-t-[5px] transition-[border-top-width] duration-200 ${
                         index > 0 ? 'border-l border-secondary' : ''
-                      } gap-2 ${
+                      } ${
                         isActive
                           ? '!border-t-0 border-b border-b-transparent hover:!border-t-0 focus:!border-t-0 active:!border-t-0'
                           : '!border-t-secondary border-b border-secondary hover:!border-t-0 focus:!border-t-0 active:!border-t-0'
@@ -112,7 +113,7 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                       onBlur={() => setHoveredDesktopItem((prev) => (prev === item.href ? null : prev))}
                     >
                       {renderHeaderMenuIcon(item.icon, hoveredDesktopItem === item.href)}
-                      <span>{item.label}</span>
+                      <span className="leading-[1.15]">{item.label}</span>
                     </Link>
                   )
                 })}

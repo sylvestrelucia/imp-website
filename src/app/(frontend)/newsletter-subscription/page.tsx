@@ -13,6 +13,7 @@ export default async function NewsletterSubscriptionPage() {
         <PageHero
           title="Newsletter Subscription"
           subtitle="Receive periodic updates on market developments, fund news, and our latest perspectives on global megatrends."
+          palette={{ color1: '#2B3DEA', color2: '#EA2B7D', color3: '#2BBCEA' }}
           subtitleClassName="text-white/85 text-[16px] md:text-[18px] leading-relaxed max-w-2xl"
         />
 

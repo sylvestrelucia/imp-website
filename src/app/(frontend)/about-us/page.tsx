@@ -31,7 +31,10 @@ export default async function AboutUsPage() {
 
   return (
     <main className="bg-white text-[#0b1035]">
-        <PageHero title="Meet the Team Behind the Strategy" />
+        <PageHero
+          title="Meet the Team Behind the Strategy"
+          palette={{ color1: '#2B3DEA', color2: '#2BEA98', color3: '#2B7DEA' }}
+        />
 
         {/* Quote */}
         <section className="container py-16 md:py-20">

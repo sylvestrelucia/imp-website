@@ -154,7 +154,10 @@ export default async function PerformancePage() {
 
   return (
     <main className="bg-white text-[#0b1035]">
-        <PageHero title="Delivering Results Over the Long Term">
+        <PageHero
+          title="Delivering Results Over the Long Term"
+          palette={{ color1: '#2B3DEA', color2: '#982BEA', color3: '#2B9DEA' }}
+        >
           <PageHeroMeta items={['CHF Hedged Share Class', 'USD Share Class']} />
         </PageHero>
 

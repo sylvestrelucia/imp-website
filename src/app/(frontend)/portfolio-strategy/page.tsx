@@ -112,6 +112,7 @@ export default async function PortfolioStrategyPage() {
         <PageHero
           title={'High-Conviction\nGlobal Thematic'}
           subtitle="The investment objective aims to generate a long-term, above average return. Therefore, in principle global direct and indirect investments in securities of listed companies are made. Shares as well as Exchange Traded Funds are being employed, giving us access to all relevant markets and segments around the globe."
+          palette={{ color1: '#2B3DEA', color2: '#782BEA', color3: '#2B66EA' }}
           subtitleClassName="mt-5 text-[16px] max-w-3xl leading-[1.7]"
         />
 

@@ -85,16 +85,28 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
       {/* Footer */}
       <footer className="bg-primary text-white" data-transition-region="footer">
         <div className="container py-14 md:py-16">
-          <div className="grid md:grid-cols-3 gap-10 lg:gap-16">
-            {/* Logo column */}
-            <div className="flex items-start gap-3">
-              <img
-                alt="IMP Global Megatrend Umbrella Fund"
-                className="h-10 w-auto"
-                src="/original-logo.svg"
-              />
-            </div>
+          <div className="mb-6 lg:mb-7">
+            <Link href="/" className="inline-flex items-center gap-2.5 h-[44px]">
+              <svg className="size-[44px] shrink-0" viewBox="0 0 28 28" role="img" aria-label="IMP logo mark">
+                <path
+                  fill="#ffffff"
+                  d="M16.091 28C22.668 28 28 22.668 28 16.091c0-6.576-5.332-11.908-11.909-11.908-6.576 0-11.908 5.332-11.908 11.908C4.183 22.668 9.515 28 16.09 28"
+                />
+                <path
+                  fill="#ffffff"
+                  d="M4.708 27.474c-6.274-6.274-6.274-16.48 0-22.765A15.97 15.97 0 0 1 16.091 0c4.309 0 8.343 1.669 11.383 4.709L25.863 6.32C20.468.949 11.703.949 6.32 6.331s-5.383 14.149 0 19.532z"
+                />
+              </svg>
+              <span className="ml-1 font-display font-semibold text-[20px] leading-[1.05] tracking-[0.01em] text-white whitespace-nowrap">
+                IMP Global Megatrend{' '}
+                <span className="[font-family:var(--font-display-regular)] font-normal">
+                  Umbrella Fund
+                </span>
+              </span>
+            </Link>
+          </div>
 
+          <div className="grid md:grid-cols-3 gap-10 lg:gap-16">
             {/* Nav column */}
             <nav className="flex flex-col gap-3">
               {footerNavItems.map((item) => (
@@ -121,6 +133,10 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
                   {item.label}
                 </Link>
               ))}
+            </nav>
+
+            {/* Social column */}
+            <nav className="flex flex-col gap-3">
               <a
                 href="https://www.linkedin.com/company/mrb-fund-partners-ag"
                 rel="noreferrer"

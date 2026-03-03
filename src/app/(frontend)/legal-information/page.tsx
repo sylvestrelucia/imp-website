@@ -10,7 +10,10 @@ export default async function LegalPage() {
 
   return (
     <main className="bg-white text-[#0b1035]">
-        <PageHero title="Regulatory & Legal Information" />
+        <PageHero
+          title="Regulatory & Legal Information"
+          palette={{ color1: '#2B3DEA', color2: '#592BEA', color3: '#2B66EA' }}
+        />
 
         <div className="container py-16 md:py-20 max-w-4xl">
           <div className="space-y-6 text-[#2b3045] text-[15px] leading-relaxed">

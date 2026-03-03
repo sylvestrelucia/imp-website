@@ -1,5 +1,5 @@
 import { AnimatedHeroHeading } from './AnimatedHeroHeading'
-import { GradientMotionBackground } from './GradientMotionBackground'
+import { HeroGrainientBackground } from './HeroGrainientBackground'
 import { getHomeCMSContent } from './getHomeCMSContent'
 import { HeroCtaButton } from './HeroCtaButton'
 
@@ -10,13 +10,17 @@ export async function HeroSection() {
 
   return (
     <section
-      className="relative grid bg-primary overflow-hidden min-h-[600px] md:min-h-[700px]"
+      className="relative bg-primary overflow-hidden"
       data-transition-skip="true"
     >
       {/* Interactive background */}
-      <GradientMotionBackground seed={2026} className="row-start-1 col-start-1" />
+      <HeroGrainientBackground
+        variant="home"
+        palette={{ color1: '#2B3DEA', color2: '#782BEA', color3: '#2B9DEA' }}
+        className="absolute inset-0 z-0 pointer-events-none"
+      />
 
-      <div className="relative z-10 row-start-1 col-start-1 w-full container pt-12 pb-20 md:pt-20 md:pb-28 lg:pt-[240px]">
+      <div className="relative z-10 h-auto w-full container pt-12 pb-20 md:pt-20 md:pb-28 lg:pt-[192px]">
         <AnimatedHeroHeading
           heading={heading}
           className="text-white text-[38px] md:text-[52px] font-semibold leading-[1.12] tracking-tight max-w-3xl"
