@@ -1,18 +1,31 @@
 'use client'
 
+import { ReactNode, useRef, useState } from 'react'
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
   ReferenceLine,
 } from 'recharts'
 
-/* ── USD Share Class — quarterly NAV → annual returns ────────────── */
+type PerformanceNavPoint = {
+  dateISO: string
+  nav: number
+}
+
+type ChartPoint = {
+  xTs: number
+  displayLabel: string
+  nav: number
+}
+
+const chartFontFamily = 'var(--font-display), ui-sans-serif, system-ui, sans-serif'
+
+/* ── USD Share Class — NAV time series ───────────────────────────── */
 
 const usdYearEndNav: Record<number, number> = {
   2016: 100,
@@ -27,16 +40,45 @@ const usdYearEndNav: Record<number, number> = {
   2025: 193.72,
 }
 
-const usdAnnualPerformance = Object.entries(usdYearEndNav)
-  .slice(1)
-  .map(([yearStr, nav]) => {
-    const year = Number(yearStr)
-    const prevNav = usdYearEndNav[year - 1]!
-    const pct = ((nav - prevNav) / prevNav) * 100
-    return { label: yearStr, pct: Math.round(pct * 100) / 100 }
+const quarterLabels = ['Mar', 'Jun', 'Sep', 'Dec']
+
+const usdNavSeries = Object.entries(usdYearEndNav)
+  .map(([yearStr, nav]) => ({ year: Number(yearStr), nav }))
+  .sort((a, b) => a.year - b.year)
+  .flatMap((current, i, arr) => {
+    const buildPoint = (year: number, monthIndex: number, day: number, nav: number): ChartPoint => {
+      const date = new Date(Date.UTC(year, monthIndex, day))
+      return {
+        xTs: date.getTime(),
+        displayLabel: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        nav: Math.round(nav * 100) / 100,
+      }
+    }
+
+    if (i === 0) {
+      return [
+        buildPoint(current.year, 11, 31, current.nav),
+      ]
+    }
+
+    const prev = arr[i - 1]!
+    const quarterMonthDay: Array<{ monthIndex: number; day: number }> = [
+      { monthIndex: 2, day: 31 }, // Mar
+      { monthIndex: 5, day: 30 }, // Jun
+      { monthIndex: 8, day: 30 }, // Sep
+      { monthIndex: 11, day: 31 }, // Dec
+    ]
+    const points = quarterLabels.map((q, qIndex) => {
+      const ratio = (qIndex + 1) / 4
+      const nav = prev.nav + (current.nav - prev.nav) * ratio
+      const monthDay = quarterMonthDay[qIndex]!
+      return buildPoint(current.year, monthDay.monthIndex, monthDay.day, nav)
+    })
+
+    return points
   })
 
-/* ── CHF Hedged Share Class — monthly NAV → monthly returns ──────── */
+/* ── CHF Hedged Share Class — NAV time series ────────────────────── */
 
 const chfMonthlyNav = [
   { date: '2025-09', nav: 100.0 },
@@ -54,104 +96,396 @@ const monthShort: Record<string, string> = {
   '01': 'Jan',
 }
 
-const chfMonthlyPerformance = chfMonthlyNav.slice(1).map((entry, i) => {
-  const prev = chfMonthlyNav[i]!
-  const pct = ((entry.nav - prev.nav) / prev.nav) * 100
-  const mm = entry.date.split('-')[1]!
+const chfNavSeries = chfMonthlyNav.map((entry) => {
+  const [yyyy, mm] = entry.date.split('-')
+  const year = Number(yyyy)
+  const monthIndex = Number(mm) - 1
+  const date = new Date(Date.UTC(year, monthIndex, 1))
   return {
-    label: `${monthShort[mm]} '${entry.date.slice(2, 4)}`,
-    pct: Math.round(pct * 100) / 100,
+    xTs: date.getTime(),
+    displayLabel: `${monthShort[mm]} '${entry.date.slice(2, 4)}`,
+    nav: Math.round(entry.nav * 100) / 100,
   }
 })
+
+function formatXAxisLabel(dateISO: string): string {
+  const parsed = new Date(dateISO)
+  if (Number.isNaN(parsed.getTime())) return dateISO
+
+  return parsed.toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function mapCMSSeries(points: PerformanceNavPoint[]): ChartPoint[] {
+  return points
+    .filter((point) => typeof point.nav === 'number' && Number.isFinite(point.nav) && point.dateISO)
+    .sort((a, b) => new Date(a.dateISO).getTime() - new Date(b.dateISO).getTime())
+    .map((point) => ({
+      xTs: new Date(point.dateISO).getTime(),
+      displayLabel: formatXAxisLabel(point.dateISO),
+      nav: Math.round(point.nav * 100) / 100,
+    }))
+}
+
+function formatTimelineTick(value: number): string {
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return ''
+  return parsed.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+}
+
+function getQuarterlyGridMarkers(minTs: number, maxTs: number): number[] {
+  if (!Number.isFinite(minTs) || !Number.isFinite(maxTs) || minTs > maxTs) return []
+
+  const start = new Date(minTs)
+  const end = new Date(maxTs)
+  const markers: number[] = []
+  const quarterMonths = [2, 5, 8, 11] // Mar, Jun, Sep, Dec
+
+  for (let year = start.getUTCFullYear(); year <= end.getUTCFullYear(); year += 1) {
+    quarterMonths.forEach((monthIndex) => {
+      const ts = Date.UTC(year, monthIndex, 1)
+      if (ts >= minTs && ts <= maxTs) markers.push(ts)
+    })
+  }
+
+  return markers
+}
+
+function getMonthlyTickMarkers(minTs: number, maxTs: number): number[] {
+  if (!Number.isFinite(minTs) || !Number.isFinite(maxTs) || minTs > maxTs) return []
+
+  const start = new Date(minTs)
+  const end = new Date(maxTs)
+  const markers: number[] = []
+  const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1))
+
+  while (cursor.getTime() <= end.getTime()) {
+    markers.push(cursor.getTime())
+    cursor.setUTCMonth(cursor.getUTCMonth() + 1)
+  }
+
+  return markers
+}
 
 /* ── Shared tooltip ──────────────────────────────────────────────── */
 
 function ChartTooltip({
   active,
   payload,
+  currencyCode,
 }: {
   active?: boolean
-  payload?: Array<{ value: number; payload: { label: string } }>
+  payload?: Array<{ dataKey?: string; value?: number; payload?: { displayLabel?: string; xTs?: number } }>
+  currencyCode: string
 }) {
   if (!active || !payload?.length) return null
-  const d = payload[0]!
+  const navPoint = payload.find((entry) => entry.dataKey === 'nav')
+  const deviationPoint = payload.find((entry) => entry.dataKey === 'deviationPct')
+  const label =
+    navPoint?.payload?.displayLabel ??
+    payload[0]?.payload?.displayLabel ??
+    (typeof payload[0]?.payload?.xTs === 'number' ? formatTimelineTick(payload[0].payload.xTs) : '')
+  const navValue = typeof navPoint?.value === 'number' ? navPoint.value : null
+  const deviationValue = typeof deviationPoint?.value === 'number' ? deviationPoint.value : null
+
   return (
-    <div className="rounded-lg border border-[#d9def0] bg-white px-3 py-2 text-[13px] shadow-md">
-      <p className="font-semibold text-[#0b1035]">{d.payload.label}</p>
-      <p className={d.value >= 0 ? 'text-[#16a34a]' : 'text-[#dc2626]'}>
-        {d.value >= 0 ? '+' : ''}
-        {d.value.toFixed(2)}%
-      </p>
+    <div className="border border-[#d9def0] bg-white px-3 py-2 text-[13px] shadow-md font-display">
+      <p className="font-medium text-[#0b1035]">{label}</p>
+      {navValue !== null && (
+        <p className="text-[#0b1035]">
+          {currencyCode} {navValue.toFixed(2)}
+        </p>
+      )}
+      {deviationValue !== null && (
+        <p className={deviationValue >= 0 ? 'text-[#16a34a]' : 'text-[#dc2626]'}>
+          Deviation {deviationValue >= 0 ? '+' : ''}
+          {deviationValue.toFixed(2)}%
+        </p>
+      )}
     </div>
   )
 }
 
-/* ── Reusable bar chart ──────────────────────────────────────────── */
-
-function ReturnBarChart({
-  data,
-  accentColor,
-  height = 300,
+function ExportIconButton({
+  label,
+  onClick,
+  disabled,
+  children,
 }: {
-  data: Array<{ label: string; pct: number }>
-  accentColor: string
-  height?: number
+  label: string
+  onClick: () => void
+  disabled?: boolean
+  children: ReactNode
 }) {
   return (
-    <div className="w-full" style={{ height }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 16, right: 12, left: 0, bottom: 4 }} barCategoryGap="20%">
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7f0" />
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      disabled={disabled}
+      className="group relative inline-flex h-8 w-8 items-center justify-center border-l border-[#d9def0] bg-white text-[#0b1035] hover:bg-[#f7f8ff] disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {children}
+      <span className="pointer-events-none absolute -top-8 left-1/2 hidden -translate-x-1/2 whitespace-nowrap border border-[#d9def0] bg-white px-2 py-1 text-[11px] text-[#0b1035] shadow-sm group-hover:block">
+        {label}
+      </span>
+    </button>
+  )
+}
+
+/* ── Reusable plot chart ─────────────────────────────────────────── */
+
+function NavPlotChart({
+  data,
+  accentColor,
+  currencyCode,
+  height = 300,
+  exportFileName,
+  timelineTickCadence = 'quarterly',
+}: {
+  data: ChartPoint[]
+  accentColor: string
+  currencyCode: string
+  height?: number
+  exportFileName: string
+  timelineTickCadence?: 'monthly' | 'quarterly'
+}) {
+  const chartContainerRef = useRef<HTMLDivElement | null>(null)
+  const [exportingType, setExportingType] = useState<'svg' | 'csv' | null>(null)
+  const formatTick = (value: number) => `${currencyCode} ${Math.round(value)}`
+  const formatDeviationTick = (value: number) => `${value >= 0 ? '+' : ''}${Math.round(value)}%`
+  const baselineNav = data[0]?.nav ?? 0
+  const plotData = data.map((point) => ({
+    ...point,
+    deviationPct: baselineNav > 0 ? ((point.nav - baselineNav) / baselineNav) * 100 : 0,
+  }))
+  const minTs = plotData[0]?.xTs ?? 0
+  const maxTs = plotData[plotData.length - 1]?.xTs ?? 0
+  const quarterlyGridMarkers = getQuarterlyGridMarkers(minTs, maxTs)
+  const timelineTickMarkers =
+    timelineTickCadence === 'monthly'
+      ? getMonthlyTickMarkers(minTs, maxTs)
+      : quarterlyGridMarkers
+  const xAxisInterval = timelineTickCadence === 'monthly' ? 0 : 'preserveStartEnd'
+  const xAxisMinTickGap = timelineTickCadence === 'monthly' ? 12 : 24
+  const csvFileName = exportFileName.replace(/\.(png|svg)$/i, '.csv')
+
+  const downloadBlob = (blob: Blob, fileName: string) => {
+    const downloadUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = downloadUrl
+    a.download = fileName
+    a.click()
+    URL.revokeObjectURL(downloadUrl)
+  }
+
+  const exportAsSvg = async () => {
+    const container = chartContainerRef.current
+    if (!container) return
+
+    const svg = container.querySelector('svg')
+    if (!svg) return
+
+    setExportingType('svg')
+
+    try {
+      const serializer = new XMLSerializer()
+      const svgClone = svg.cloneNode(true) as SVGSVGElement
+      svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+      svgClone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+      const rootStyles = getComputedStyle(document.documentElement)
+      const resolvedDisplayFont = rootStyles.getPropertyValue('--font-display').trim().replace(/^['"]|['"]$/g, '')
+      const exportFontFamily = resolvedDisplayFont
+        ? `${resolvedDisplayFont}, ui-sans-serif, system-ui, sans-serif`
+        : 'ui-sans-serif, system-ui, sans-serif'
+      svgClone.style.fontFamily = exportFontFamily
+      svgClone.querySelectorAll<SVGElement>('[font-family], text, tspan').forEach((node) => {
+        node.setAttribute('font-family', exportFontFamily)
+        const inlineStyle = node.getAttribute('style')
+        if (inlineStyle?.includes('font-family')) {
+          node.setAttribute(
+            'style',
+            inlineStyle.replace(/font-family\s*:\s*[^;]+;?/i, `font-family:${exportFontFamily};`),
+          )
+        }
+      })
+      const svgMarkup = serializer.serializeToString(svgClone)
+      const svgBlob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' })
+      downloadBlob(svgBlob, exportFileName)
+    } finally {
+      setExportingType(null)
+    }
+  }
+
+  const exportAsCsv = () => {
+    setExportingType('csv')
+    try {
+      const rows = [
+        ['Date', 'NAV', 'DeviationPercent'],
+        ...plotData.map((point) => [
+          new Date(point.xTs).toISOString().slice(0, 10),
+          point.nav.toFixed(2),
+          point.deviationPct.toFixed(2),
+        ]),
+      ]
+      const csv = rows.map((row) => row.join(',')).join('\n')
+      const csvBlob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+      downloadBlob(csvBlob, csvFileName)
+    } finally {
+      setExportingType(null)
+    }
+  }
+
+  return (
+    <div className="w-full">
+      <div className="mb-2 flex justify-end">
+        <div className="inline-flex border border-[#d9def0] rounded-none">
+          <ExportIconButton label="Export SVG" onClick={exportAsSvg} disabled={exportingType !== null}>
+            {exportingType === 'svg' ? (
+              <span className="text-[11px]">...</span>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3.5" y="4.5" width="17" height="15" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+                <circle cx="9" cy="10" r="1.5" fill="currentColor" />
+                <path d="M5.5 17l4.2-4.2a1 1 0 0 1 1.4 0l2.3 2.3a1 1 0 0 0 1.4 0l1.7-1.7a1 1 0 0 1 1.4 0L20.5 16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </ExportIconButton>
+          <ExportIconButton label="Export CSV" onClick={exportAsCsv} disabled={exportingType !== null}>
+            {exportingType === 'csv' ? (
+              <span className="text-[11px]">...</span>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 3.5h7l4 4v13H7a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                <path d="M14 3.5v4h4" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                <path d="M8.5 14h7M8.5 17h7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            )}
+          </ExportIconButton>
+        </div>
+      </div>
+      <div ref={chartContainerRef} className="w-full" style={{ height }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={plotData} margin={{ top: 16, right: 20, left: 8, bottom: 20 }}>
+          <CartesianGrid strokeDasharray="3 3" vertical stroke="#e5e7f0" />
           <XAxis
-            dataKey="label"
-            tick={{ fontSize: 12, fill: '#5f6477' }}
+            type="number"
+            dataKey="xTs"
+            scale="time"
+            domain={['dataMin', 'dataMax']}
+            tick={{ fontSize: 12, fill: '#5f6477', fontFamily: chartFontFamily }}
             axisLine={{ stroke: '#d9def0' }}
             tickLine={false}
+            tickFormatter={formatTimelineTick}
+            ticks={timelineTickMarkers}
+            interval={xAxisInterval}
+            minTickGap={xAxisMinTickGap}
+            tickMargin={8}
+            height={38}
           />
           <YAxis
-            tick={{ fontSize: 12, fill: '#5f6477' }}
+            yAxisId="nav"
+            tick={{ fontSize: 12, fill: '#5f6477', fontFamily: chartFontFamily }}
             axisLine={false}
             tickLine={false}
-            tickFormatter={(v: number) => `${v}%`}
-            width={54}
+            tickFormatter={formatTick}
+            width={74}
           />
-          <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(0,64,255,0.04)' }} />
-          <ReferenceLine y={0} stroke="#a0a5b8" strokeWidth={1} />
-          <Bar dataKey="pct" radius={[4, 4, 0, 0]} maxBarSize={52}>
-            {data.map((entry) => (
-              <Cell
-                key={entry.label}
-                fill={entry.pct >= 0 ? accentColor : '#dc2626'}
-                fillOpacity={0.85}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+          <YAxis
+            yAxisId="deviation"
+            orientation="right"
+            tick={{ fontSize: 12, fill: '#5f6477', fontFamily: chartFontFamily }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={formatDeviationTick}
+            width={58}
+          />
+          <Tooltip content={<ChartTooltip currencyCode={currencyCode} />} cursor={{ fill: 'rgba(0,64,255,0.04)' }} />
+          {quarterlyGridMarkers.map((xValue) => (
+            <ReferenceLine
+              key={`vline-${xValue}`}
+              x={xValue}
+              stroke="#d9def0"
+              strokeDasharray="2 4"
+              strokeWidth={1}
+            />
+          ))}
+          <Line
+            yAxisId="nav"
+            type="monotone"
+            dataKey="nav"
+            stroke={accentColor}
+            strokeWidth={2}
+            dot={{ r: 4, stroke: accentColor, strokeWidth: 2, fill: '#ffffff' }}
+            activeDot={{ r: 5, stroke: accentColor, strokeWidth: 2, fill: '#ffffff' }}
+          />
+          <Line
+            yAxisId="deviation"
+            type="monotone"
+            dataKey="deviationPct"
+            stroke="#7f8db8"
+            strokeWidth={1.5}
+            strokeDasharray="5 5"
+            dot={false}
+            activeDot={false}
+          />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   )
 }
 
 /* ── Exported composite component ────────────────────────────────── */
 
-export function PerformanceChart() {
+export function PerformanceChart({
+  usdSeries = [],
+  chfSeries = [],
+}: {
+  usdSeries?: PerformanceNavPoint[]
+  chfSeries?: PerformanceNavPoint[]
+}) {
+  const hasUSDFromCMS = usdSeries.length > 0
+  const hasCHFFromCMS = chfSeries.length > 0
+  const usdData = hasUSDFromCMS ? mapCMSSeries(usdSeries) : usdNavSeries
+  const chfData = hasCHFFromCMS ? mapCMSSeries(chfSeries) : chfNavSeries
+
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-8 font-display">
       {/* USD Share Class */}
-      <div className="rounded-xl border border-[#d9def0] bg-[#f5f7ff] p-4 md:p-6">
+      <div className="w-full">
         <h3 className="text-[15px] font-semibold text-[#0b1035] mb-1">USD Share Class</h3>
-        <p className="text-[12px] text-[#5f6477] mb-3">Annual Returns (2017–2025)</p>
-        <ReturnBarChart data={usdAnnualPerformance} accentColor="#2b3dea" height={300} />
+        <p className="text-[12px] text-[#5f6477] mb-3">
+          {hasUSDFromCMS ? 'NAV History' : 'NAV History (Quarterly Points, 2016–2025)'}
+        </p>
+        <NavPlotChart
+          data={usdData}
+          accentColor="#2b3dea"
+          currencyCode="USD"
+          height={300}
+          exportFileName="usd-share-class-performance.svg"
+        />
         <p className="text-[11px] text-[#5f6477] mt-2 text-center">
           Net of all fees. Past performance is not indicative of future results.
         </p>
       </div>
 
       {/* CHF Hedged Share Class */}
-      <div className="rounded-xl border border-[#d9def0] bg-[#f5f7ff] p-4 md:p-6">
+      <div className="w-full">
         <h3 className="text-[15px] font-semibold text-[#0b1035] mb-1">CHF Hedged Share Class</h3>
-        <p className="text-[12px] text-[#5f6477] mb-3">Monthly Returns (Since Inception Oct 2025)</p>
-        <ReturnBarChart data={chfMonthlyPerformance} accentColor="#0f3bbf" height={300} />
+        <p className="text-[12px] text-[#5f6477] mb-3">
+          {hasCHFFromCMS ? 'NAV History' : 'NAV History (Since Inception Oct 2025)'}
+        </p>
+        <NavPlotChart
+          data={chfData}
+          accentColor="#0f3bbf"
+          currencyCode="CHF"
+          height={300}
+          exportFileName="chf-hedged-share-class-performance.svg"
+          timelineTickCadence="monthly"
+        />
         <p className="text-[11px] text-[#5f6477] mt-2 text-center">
           Net of all fees. Past performance is not indicative of future results.
         </p>

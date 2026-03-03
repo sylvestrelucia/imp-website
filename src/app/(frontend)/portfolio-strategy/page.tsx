@@ -3,6 +3,7 @@ import { CMSPageContent } from '../_components/CMSPageContent'
 import { PageHero } from '../_components/PageHero'
 import { AllocationPanel } from './AllocationPanel'
 import { InvestmentProcessTimeline } from './InvestmentProcessTimeline'
+import { StrategyStepSection } from './StrategyStepSection'
 import { TopHoldingsSection } from './TopHoldingsSection'
 
 const strategySteps = [
@@ -121,49 +122,7 @@ export default async function PortfolioStrategyPage() {
         {/* Strategy Steps */}
         <div className="pb-0">
           {strategySteps.map((step, idx) => (
-            <section
-              key={step.title}
-              className={`${idx === 0 ? '' : 'border-t border-[#d9def0]'} ${idx === strategySteps.length - 1 ? 'border-b border-[#d9def0]' : ''} scroll-mt-24 pt-16 md:pt-20 pb-0`}
-            >
-              <div className="container">
-                <div
-                  className={`grid lg:grid-cols-2 gap-10 lg:gap-16 items-stretch ${idx % 2 === 1 ? 'lg:direction-rtl' : ''}`}
-                  style={idx % 2 === 1 ? { direction: 'rtl' } : undefined}
-                >
-                  <div className="h-full" style={idx % 2 === 1 ? { direction: 'ltr' } : undefined}>
-                    <div className="flex h-full items-stretch gap-4">
-                      <div className="hidden md:flex items-stretch gap-2 shrink-0 self-stretch">
-                        <span
-                          className="font-display text-right text-[#0b1035] text-[18px] font-medium whitespace-nowrap"
-                          style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
-                        >
-                          {step.title}
-                        </span>
-                        <span aria-hidden className="w-px self-stretch bg-[#d9def0]" />
-                      </div>
-                      <div className="flex-1 self-start pb-5 md:pb-6">
-                        <h2 className="md:hidden text-[24px] leading-[1.25] text-[#0b1035] mb-5">{step.title}</h2>
-                        <div className="space-y-5">
-                          {step.items.map((item) => (
-                            <div key={item.heading}>
-                              <h3 className="text-[16px] font-semibold text-[#0b1035] mb-1">{item.heading}</h3>
-                              <p className="text-[#2b3045] text-[15px] leading-relaxed">{item.body}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`flex items-center justify-center ${idx % 2 === 1 ? 'lg:pr-8' : 'lg:pl-8'}`}
-                    style={idx % 2 === 1 ? { direction: 'ltr' } : undefined}
-                  >
-                    <img src={step.src} alt={step.title} className="w-full h-auto object-contain" />
-                  </div>
-                </div>
-              </div>
-            </section>
+            <StrategyStepSection key={step.title} step={step} index={idx} total={strategySteps.length} />
           ))}
         </div>
 

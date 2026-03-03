@@ -1,3 +1,6 @@
+nextjs-portal {
+  background: #fff !important;
+}
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -468,3 +471,4 @@
     animation: none;
   }
 }
+

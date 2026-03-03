@@ -51,6 +51,11 @@ export type FundDetailItem = {
   icon: FundDetailIcon
 }
 
+export type PerformanceNavPoint = {
+  dateISO: string
+  nav: number
+}
+
 function richTextToParagraphs(richText: unknown): string[] {
   const root = (richText as { root?: { children?: Array<Record<string, unknown>> } } | null)?.root
   const children = Array.isArray(root?.children) ? root.children : []
@@ -503,5 +508,90 @@ export async function getCMSMegatrendImageVariantsByTitle(): Promise<
     return byTitle
   } catch {
     return {}
+  }
+}
+
+function parseWixDateToISO(value: unknown): string | null {
+  if (!value) return null
+  if (typeof value === 'string') {
+    const parsed = new Date(value)
+    if (Number.isNaN(parsed.getTime())) return null
+    return parsed.toISOString()
+  }
+
+  if (typeof value === 'object') {
+    const obj = value as { $date?: unknown; date?: unknown }
+    const nested = obj.$date ?? obj.date
+    if (typeof nested === 'string') {
+      const parsed = new Date(nested)
+      if (Number.isNaN(parsed.getTime())) return null
+      return parsed.toISOString()
+    }
+  }
+
+  return null
+}
+
+function toPerformanceNavPoint(doc: unknown): PerformanceNavPoint | null {
+  const record = (doc && typeof doc === 'object' ? doc : {}) as {
+    data?: Record<string, unknown> | unknown
+    numberFields?: Array<{ key?: unknown; value?: unknown }> | null
+    dateFields?: Array<{ key?: unknown; value?: unknown }> | null
+  }
+
+  const data = (record.data && typeof record.data === 'object' ? record.data : {}) as Record<string, unknown>
+
+  const directNav = typeof data.valuation === 'number' ? data.valuation : null
+  const numberFieldNav = Array.isArray(record.numberFields)
+    ? record.numberFields.find((entry) => entry?.key === 'valuation' && typeof entry.value === 'number')
+    : null
+  const nav = directNav ?? (typeof numberFieldNav?.value === 'number' ? numberFieldNav.value : null)
+  if (typeof nav !== 'number' || !Number.isFinite(nav)) return null
+
+  const directDate = parseWixDateToISO(data.date)
+  const dateFieldValue = Array.isArray(record.dateFields)
+    ? record.dateFields.find((entry) => entry?.key === 'date')?.value
+    : null
+  const dateISO = directDate ?? parseWixDateToISO(dateFieldValue)
+  if (!dateISO) return null
+
+  return { dateISO, nav: Math.round(nav * 100) / 100 }
+}
+
+export async function getCMSPerformanceNavSeries(): Promise<{
+  usd: PerformanceNavPoint[]
+  chf: PerformanceNavPoint[]
+}> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    const [usdResult, chfResult] = await Promise.all([
+      payload.find({
+        collection: 'wix-import-usd',
+        limit: 300,
+        pagination: false,
+        depth: 0,
+      }),
+      payload.find({
+        collection: 'wix-import-chf',
+        limit: 300,
+        pagination: false,
+        depth: 0,
+      }),
+    ])
+
+    const parseSeries = (docs: unknown[]): PerformanceNavPoint[] => {
+      return docs
+        .map((doc) => toPerformanceNavPoint(doc))
+        .filter((item): item is PerformanceNavPoint => Boolean(item))
+        .sort((a, b) => new Date(a.dateISO).getTime() - new Date(b.dateISO).getTime())
+    }
+
+    return {
+      usd: parseSeries(usdResult.docs as unknown[]),
+      chf: parseSeries(chfResult.docs as unknown[]),
+    }
+  } catch {
+    return { usd: [], chf: [] }
   }
 }

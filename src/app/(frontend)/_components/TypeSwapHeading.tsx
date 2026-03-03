@@ -90,8 +90,6 @@ export function TypeSwapHeading({ text, className }: TypeSwapHeadingProps) {
         style={{
           whiteSpace: 'pre-line',
           position: 'absolute',
-          top: 0,
-          left: 0,
           visibility: 'hidden',
           pointerEvents: 'none',
         }}
