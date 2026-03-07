@@ -153,7 +153,7 @@ export default async function FundPage() {
         <PageHero
           title={heroTitle}
           subtitle={heroSubtitle}
-          palette={{ color1: 'oklch(0.45 0.13 36)', color2: 'oklch(0.45 0.12 58)', color3: 'oklch(0.45 0.11 20)' }}
+          palette={{ color1: '#2b3dea', color2: 'oklch(0.45 0.12 58)', color3: 'oklch(0.45 0.11 20)' }}
           subtitleClassName="text-white text-[19px] md:text-[21px] max-w-lg font-light"
           sectionClassName="relative overflow-hidden"
         />

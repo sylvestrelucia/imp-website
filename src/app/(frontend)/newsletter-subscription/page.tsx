@@ -7,7 +7,7 @@ export default async function NewsletterSubscriptionPage() {
           title="Newsletter Subscription"
           subtitle="Receive periodic updates on market developments, fund news, and our latest perspectives on global megatrends."
           palette={{
-            color1: 'oklch(0.46 0.15 350)',
+            color1: '#2b3dea',
             color2: 'oklch(0.46 0.13 18)',
             color3: 'oklch(0.46 0.11 322)',
           }}

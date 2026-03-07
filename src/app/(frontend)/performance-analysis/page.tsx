@@ -179,7 +179,7 @@ export default async function PerformancePage() {
     <main className="bg-white text-[#0b1035]">
         <PageHero
           title={heroTitle}
-          palette={{ color1: 'oklch(0.46 0.16 306)', color2: 'oklch(0.46 0.14 330)', color3: 'oklch(0.46 0.12 280)' }}
+          palette={{ color1: '#2b3dea', color2: 'oklch(0.46 0.14 330)', color3: 'oklch(0.46 0.12 280)' }}
         >
           <PageHeroMeta items={[chfTitle, usdTitle]} />
         </PageHero>

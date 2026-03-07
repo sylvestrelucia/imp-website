@@ -67,7 +67,7 @@ export function PageHero({
   subtitle,
   children,
   palette = {
-    color1: 'oklch(0.46 0.16 300)',
+    color1: '#2b3dea',
     color2: 'oklch(0.46 0.13 334)',
     color3: 'oklch(0.46 0.11 278)',
   },

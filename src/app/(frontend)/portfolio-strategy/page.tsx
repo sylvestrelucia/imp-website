@@ -124,7 +124,7 @@ export default async function PortfolioStrategyPage() {
     <main className="bg-white text-[#0b1035]">
         <PageHero
           title={'High-Conviction\nGlobal Thematic'}
-          palette={{ color1: 'oklch(0.46 0.14 40)', color2: 'oklch(0.46 0.16 24)', color3: 'oklch(0.46 0.12 62)' }}
+          palette={{ color1: '#2b3dea', color2: 'oklch(0.46 0.16 24)', color3: 'oklch(0.46 0.12 62)' }}
         />
 
         <section className="bg-secondary py-20 md:py-24">

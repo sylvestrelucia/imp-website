@@ -33,7 +33,7 @@ export default async function AboutUsPage() {
     <main className="bg-white text-[#0b1035]">
         <PageHero
           title="Meet the Team Behind the Strategy"
-          palette={{ color1: 'oklch(0.47 0.13 165)', color2: 'oklch(0.47 0.11 186)', color3: 'oklch(0.47 0.10 145)' }}
+          palette={{ color1: '#2b3dea', color2: 'oklch(0.47 0.11 186)', color3: 'oklch(0.47 0.10 145)' }}
         />
 
         {/* Quote */}

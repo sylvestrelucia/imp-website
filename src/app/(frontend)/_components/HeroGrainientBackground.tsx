@@ -35,21 +35,21 @@ export function HeroGrainientBackground({
         color2={palette.color2}
         color3={palette.color3}
         timeSpeed={variant === 'home' ? 0.55 : 0.6}
-        colorBalance={-0.32}
+        colorBalance={variant === 'home' ? -0.32 : 0.28}
         warpStrength={2.4}
         warpFrequency={5}
         warpSpeed={2}
         warpAmplitude={50}
         blendAngle={0}
-        blendSoftness={0.05}
+        blendSoftness={variant === 'home' ? 0.05 : 0.02}
         rotationAmount={500}
         noiseScale={2}
         grainAmount={0.1}
         grainScale={2}
         grainAnimated={false}
-        contrast={1.5}
+        contrast={variant === 'home' ? 1.5 : 1}
         gamma={1}
-        saturation={1}
+        saturation={variant === 'home' ? 1 : 0.68}
         centerX={0}
         centerY={0}
         zoom={0.9}

@@ -12,7 +12,7 @@ export default async function LegalPage() {
     <main className="bg-white text-[#0b1035]">
         <PageHero
           title="Regulatory & Legal Information"
-          palette={{ color1: 'oklch(0.45 0.14 96)', color2: 'oklch(0.45 0.12 78)', color3: 'oklch(0.45 0.10 58)' }}
+          palette={{ color1: '#2b3dea', color2: 'oklch(0.45 0.12 78)', color3: 'oklch(0.45 0.10 58)' }}
         />
 
         <div className="container py-16 md:py-20 max-w-4xl">
