@@ -197,8 +197,9 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
           pointerEvents: menuOpen ? 'auto' : 'none',
         }}
       >
+        <div className="absolute inset-0 overflow-hidden pointer-events-none bg-[#2b3dea]" />
         <nav
-          className="container relative mt-28 flex flex-col gap-1 transition-all duration-300"
+          className="container relative z-10 mt-28 flex flex-col gap-1 transition-all duration-300"
           style={{
             transform: menuOpen ? 'translateY(0)' : 'translateY(-20px)',
           }}
@@ -216,9 +217,8 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
           ))}
           <Link
             href="/newsletter-subscription"
-            className="group font-display mt-6 inline-flex items-center justify-center gap-2.5 rounded-full bg-primary px-6 py-3.5 text-white text-[16px] font-medium hover:bg-primary/90 transition-colors"
+            className="[font-family:var(--font-display-regular)] text-[20px] font-light text-white/90 hover:text-white transition-colors py-3 border-b border-white/10"
           >
-            <AnimatedIcon name="mailCheck" size={16} className="shrink-0 text-white" />
             Subscribe to Newsletter
           </Link>
         </nav>

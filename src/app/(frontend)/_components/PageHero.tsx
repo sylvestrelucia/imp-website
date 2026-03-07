@@ -1,6 +1,6 @@
 import React from 'react'
 import { cn } from '@/utilities/ui'
-import { TypeSwapHeading } from './TypeSwapHeading'
+import { AnimatedHeroHeading } from './AnimatedHeroHeading'
 import { PageHeroSilkBackground, type PageHeroPalette } from './PageHeroSilkBackground'
 
 type PageHeroSubtitleProps = React.ComponentProps<'p'>
@@ -8,7 +8,7 @@ type PageHeroSubtitleProps = React.ComponentProps<'p'>
 export function PageHeroSubtitle({ className, children, ...props }: PageHeroSubtitleProps) {
   return (
     <p
-      className={cn('mt-4 text-white text-[19px] md:text-[21px] max-w-lg leading-[1.6]', className)}
+      className={cn('mt-4 min-h-[4.8em] text-white text-[19px] md:text-[21px] max-w-lg leading-[1.6]', className)}
       data-transition-force="true"
       {...props}
     >
@@ -79,37 +79,42 @@ export function PageHero({
   return (
     <section
       className={cn(
-        'relative min-h-screen overflow-hidden bg-[#2b3dea] pt-40 pb-16 md:pt-48 md:pb-20 -mb-px',
+        'relative min-h-screen overflow-hidden bg-[#2b3dea] -mb-px',
         sectionClassName,
       )}
       data-transition-skip="true"
     >
       <PageHeroSilkBackground palette={palette} />
-      <div className={cn('container relative z-10', containerClassName)}>
-        {typeof title === 'string' ? (
-          <TypeSwapHeading
-            text={title}
-            className={cn(
-              'text-white text-[38px] md:text-[48px] font-semibold leading-[1.12] tracking-tight max-w-3xl',
-              titleClassName,
-            )}
-          />
-        ) : (
-          <h1
-            className={cn(
-              'text-white text-[38px] md:text-[48px] font-semibold leading-[1.12] tracking-tight max-w-3xl',
-              titleClassName,
-            )}
-          >
-            {title}
-          </h1>
-        )}
-        {subtitle ? (
-          <>
-            <PageHeroSubtitle className={subtitleClassName}>{subtitle}</PageHeroSubtitle>
-          </>
-        ) : null}
-        {children}
+      <div
+        className="relative z-10 flex min-h-screen items-center pt-40 pb-16 md:pt-48 md:pb-20"
+        data-transition-hero-content="true"
+      >
+        <div className={cn('container', containerClassName)}>
+          {typeof title === 'string' ? (
+            <AnimatedHeroHeading
+              heading={title}
+              className={cn(
+                'text-white text-[38px] md:text-[48px] font-semibold leading-[1.12] tracking-tight max-w-3xl',
+                titleClassName,
+              )}
+            />
+          ) : (
+            <h1
+              className={cn(
+                'text-white text-[38px] md:text-[48px] font-semibold leading-[1.12] tracking-tight max-w-3xl',
+                titleClassName,
+              )}
+            >
+              {title}
+            </h1>
+          )}
+          {subtitle ? (
+            <>
+              <PageHeroSubtitle className={subtitleClassName}>{subtitle}</PageHeroSubtitle>
+            </>
+          ) : null}
+          {children}
+        </div>
       </div>
 
       <div

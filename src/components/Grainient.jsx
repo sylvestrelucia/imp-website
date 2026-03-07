@@ -263,6 +263,9 @@ const ensureSharedRuntime = initial => {
     raf: 0,
     lastFrameTs: null,
     accumulatedTimeSeconds: 0,
+    width: 0,
+    height: 0,
+    dpr: Math.min(window.devicePixelRatio || 1, 2),
     attachCount: 0,
     baseWarpSpeed: initial.warpSpeed,
     targetColor1: cssColorToRgb(initial.color1),
@@ -277,10 +280,39 @@ const setRuntimeSize = (runtime, container) => {
   const rect = container.getBoundingClientRect();
   const width = Math.max(1, Math.floor(rect.width));
   const height = Math.max(1, Math.floor(rect.height));
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const sizeChanged = width !== runtime.width || height !== runtime.height || dpr !== runtime.dpr;
+  if (!sizeChanged) {
+    if (container.dataset.resizeSnapshot === 'true') {
+      container.style.removeProperty('background-image');
+      container.style.removeProperty('background-size');
+      container.style.removeProperty('background-position');
+      container.style.removeProperty('background-repeat');
+      container.dataset.resizeSnapshot = 'false';
+    }
+    return;
+  }
+
+  runtime.width = width;
+  runtime.height = height;
+  runtime.dpr = dpr;
+  runtime.renderer.dpr = dpr;
   runtime.renderer.setSize(width, height);
   const res = runtime.program.uniforms.iResolution.value;
   res[0] = runtime.gl.drawingBufferWidth;
   res[1] = runtime.gl.drawingBufferHeight;
+
+  // During window resize some browsers pause RAF briefly; draw immediately so the
+  // canvas never appears transparent and reveals the section fallback color.
+  runtime.renderer.render({ scene: runtime.mesh });
+
+  if (container.dataset.resizeSnapshot === 'true') {
+    container.style.removeProperty('background-image');
+    container.style.removeProperty('background-size');
+    container.style.removeProperty('background-position');
+    container.style.removeProperty('background-repeat');
+    container.dataset.resizeSnapshot = 'false';
+  }
 };
 
 const applyRuntimeTargets = (runtime, settings) => {
@@ -425,6 +457,8 @@ const Grainient = ({
     runtimeRef.current = runtime;
 
     const container = containerRef.current;
+    container.style.opacity = '0';
+    container.style.transition = 'opacity 520ms cubic-bezier(0.22, 1, 0.36, 1)';
     applyRuntimeTargets(runtime, {
       timeSpeed,
       colorBalance,
@@ -458,10 +492,57 @@ const Grainient = ({
     ro.observe(container);
     setRuntimeSize(runtime, container);
     startRuntimeLoop(runtime);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        container.style.opacity = '1';
+      });
+    });
+
+    let resizeSnapshotTimer = 0;
+    const onWindowResize = () => {
+      // Preserve the last frame immediately at resize start to avoid a visible
+      // flash of the section fallback color before the resized frame is drawn.
+      if (container.dataset.resizeSnapshot !== 'true') {
+        try {
+          container.style.backgroundImage = `url(${runtime.canvas.toDataURL('image/png')})`;
+          container.style.backgroundSize = 'cover';
+          container.style.backgroundPosition = 'center';
+          container.style.backgroundRepeat = 'no-repeat';
+          container.dataset.resizeSnapshot = 'true';
+        } catch {
+          // Ignore snapshot failures (cross-origin or memory pressure).
+        }
+      }
+
+      window.clearTimeout(resizeSnapshotTimer);
+      resizeSnapshotTimer = window.setTimeout(() => {
+        if (container.dataset.resizeSnapshot === 'true') {
+          container.style.removeProperty('background-image');
+          container.style.removeProperty('background-size');
+          container.style.removeProperty('background-position');
+          container.style.removeProperty('background-repeat');
+          container.dataset.resizeSnapshot = 'false';
+        }
+      }, 180);
+
+      setRuntimeSize(runtime, container);
+    };
+    window.addEventListener('resize', onWindowResize, { passive: true });
 
     return () => {
       resizeObserverRef.current?.disconnect();
       resizeObserverRef.current = null;
+      window.removeEventListener('resize', onWindowResize);
+      window.clearTimeout(resizeSnapshotTimer);
+      if (container.dataset.resizeSnapshot === 'true') {
+        container.style.removeProperty('background-image');
+        container.style.removeProperty('background-size');
+        container.style.removeProperty('background-position');
+        container.style.removeProperty('background-repeat');
+        container.dataset.resizeSnapshot = 'false';
+      }
+      container.style.removeProperty('opacity');
+      container.style.removeProperty('transition');
       runtime.attachCount = Math.max(0, runtime.attachCount - 1);
       // Keep the shared loop alive to avoid restart flicker between route swaps.
     };

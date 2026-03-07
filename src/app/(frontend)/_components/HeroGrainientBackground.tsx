@@ -26,6 +26,7 @@ export function HeroGrainientBackground({
       className={className}
       data-transition-force="true"
       data-transition-keep-on-leave="true"
+      data-transition-canvas-fade-on-leave="true"
       data-transition-hero-height={withHeightAnimation ? 'true' : undefined}
       aria-hidden="true"
     >

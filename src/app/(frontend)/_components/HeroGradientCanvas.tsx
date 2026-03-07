@@ -86,6 +86,23 @@ function createBlobs(seed: number, width: number, height: number): Blob[] {
   return [...baseBlobs, orangeBlob]
 }
 
+function scaleBlobs(blobs: Blob[], fromWidth: number, fromHeight: number, toWidth: number, toHeight: number): Blob[] {
+  const widthRatio = toWidth / Math.max(1, fromWidth)
+  const heightRatio = toHeight / Math.max(1, fromHeight)
+  const radiusRatio = Math.max(widthRatio, heightRatio)
+
+  return blobs.map((blob) => ({
+    ...blob,
+    cx: blob.cx * widthRatio,
+    cy: blob.cy * heightRatio,
+    ax: blob.ax * widthRatio,
+    ay: blob.ay * heightRatio,
+    ax2: blob.ax2 * widthRatio,
+    ay2: blob.ay2 * heightRatio,
+    r: blob.r * radiusRatio,
+  }))
+}
+
 export function HeroGradientCanvas({ seed = 1337 }: { seed?: number }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const frameRef = useRef<number | null>(null)
@@ -106,7 +123,8 @@ export function HeroGradientCanvas({ seed = 1337 }: { seed?: number }) {
       const height = Math.max(1, Math.floor(rect.height))
       const dpr = clamp(window.devicePixelRatio || 1, 1, 1.5)
 
-      const changed = width !== sizeRef.current.width || height !== sizeRef.current.height
+      const previousSize = sizeRef.current
+      const changed = width !== previousSize.width || height !== previousSize.height
       sizeRef.current = { width, height }
 
       canvas.width = Math.floor(width * dpr)
@@ -115,8 +133,16 @@ export function HeroGradientCanvas({ seed = 1337 }: { seed?: number }) {
       canvas.style.height = `${height}px`
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      if (changed || blobsRef.current.length === 0) {
+      if (blobsRef.current.length === 0) {
         blobsRef.current = createBlobs(seed, width, height)
+      } else if (changed) {
+        blobsRef.current = scaleBlobs(
+          blobsRef.current,
+          previousSize.width,
+          previousSize.height,
+          width,
+          height,
+        )
       }
     }
 

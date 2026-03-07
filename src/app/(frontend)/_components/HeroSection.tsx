@@ -20,16 +20,21 @@ export async function HeroSection() {
         className="absolute inset-0 z-0 pointer-events-none"
       />
 
-      <div className="relative z-10 h-auto w-full container pt-12 pb-20 md:pt-20 md:pb-28 lg:pt-[192px]">
-        <AnimatedHeroHeading
-          heading={heading}
-          className="text-white text-[38px] md:text-[52px] font-semibold leading-[1.12] tracking-tight max-w-3xl"
-        />
-        <p className="mt-5 text-white font-light text-[19px] md:text-[22px] max-w-md leading-[1.6] whitespace-pre-line">
-          {subtitle.replace('megatrends ', 'megatrends\n')}
-        </p>
-        <div className="mt-7">
-          <HeroCtaButton href={cms.hero.ctaHref} label={cms.hero.ctaLabel} />
+      <div
+        className="relative z-10 flex min-h-screen items-center pt-12 pb-20 md:pt-20 md:pb-28 lg:pt-[192px]"
+        data-transition-hero-content="true"
+      >
+        <div className="container w-full">
+          <AnimatedHeroHeading
+            heading={heading}
+            className="text-white text-[38px] md:text-[52px] font-semibold leading-[1.12] tracking-tight max-w-3xl"
+          />
+          <p className="mt-5 text-white font-light text-[19px] md:text-[22px] max-w-md leading-[1.6] whitespace-pre-line">
+            {subtitle.replace('megatrends ', 'megatrends\n')}
+          </p>
+          <div className="mt-7">
+            <HeroCtaButton href={cms.hero.ctaHref} label={cms.hero.ctaLabel} />
+          </div>
         </div>
       </div>
 

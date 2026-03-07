@@ -3,9 +3,9 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 
-const FADE_DURATION_MS = 190
+const FADE_DURATION_MS = 320
 const HERO_HEIGHT_TRANSITION_MS = 280
-const FADE_IN_DURATION_MS = 320
+const FADE_IN_DURATION_MS = 520
 const HERO_HEIGHT_ANIMATING_ATTR = 'data-hero-height-animating'
 const HERO_HEIGHT_ANIMATION_END_EVENT = 'hero-height-animation-end'
 
@@ -17,6 +17,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
   const rafRef = useRef<number | null>(null)
   const heroRafRef = useRef<number | null>(null)
   const pendingHeroHeightRef = useRef<number | null>(null)
+  const hasMountedRef = useRef(false)
 
   const setHeroHeightAnimating = (isAnimating: boolean) => {
     const root = document.documentElement
@@ -29,6 +30,42 @@ export function PageTransition({ children }: { children: ReactNode }) {
     if (wasAnimating) {
       window.dispatchEvent(new Event(HERO_HEIGHT_ANIMATION_END_EVENT))
     }
+  }
+
+  const parseDurationMs = (value: string): number => {
+    const trimmed = value.trim()
+    if (!trimmed) return 0
+    if (trimmed.endsWith('ms')) {
+      const parsedMs = Number.parseFloat(trimmed.slice(0, -2))
+      return Number.isFinite(parsedMs) ? Math.max(0, parsedMs) : 0
+    }
+    if (trimmed.endsWith('s')) {
+      const parsedS = Number.parseFloat(trimmed.slice(0, -1))
+      return Number.isFinite(parsedS) ? Math.max(0, parsedS * 1000) : 0
+    }
+    const parsed = Number.parseFloat(trimmed)
+    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0
+  }
+
+  const runEnterAnimation = (content: HTMLDivElement | null) => {
+    if (!content) return
+
+    content.style.removeProperty('--page-transition-duration')
+    content.classList.remove('page-transition-leave', 'page-transition-enter', 'page-transition-enter-start')
+    content.classList.add('page-transition-enter-start')
+    // Force start state to be committed first.
+    content.getBoundingClientRect()
+    rafRef.current = window.requestAnimationFrame(() => {
+      rafRef.current = window.requestAnimationFrame(() => {
+        content.classList.remove('page-transition-enter-start')
+        content.classList.add('page-transition-enter')
+      })
+    })
+    timersRef.current.push(
+      window.setTimeout(() => {
+        content.classList.remove('page-transition-enter')
+      }, FADE_IN_DURATION_MS),
+    )
   }
 
   const clearTimers = () => {
@@ -128,7 +165,13 @@ export function PageTransition({ children }: { children: ReactNode }) {
       const content = contentRef.current
       content?.classList.remove('page-transition-enter-start', 'page-transition-enter')
       content?.classList.add('page-transition-leave')
-      timersRef.current.push(window.setTimeout(() => router.push(nextPath), FADE_DURATION_MS))
+      const heading = content?.querySelector('.hero-heading') as HTMLElement | null
+      const headingLeaveDurationMs = heading
+        ? parseDurationMs(getComputedStyle(heading).getPropertyValue('--hero-word-leave-total-ms'))
+        : 0
+      const leaveDelayMs = Math.max(FADE_DURATION_MS, headingLeaveDurationMs)
+      content?.style.setProperty('--page-transition-duration', `${leaveDelayMs}ms`)
+      timersRef.current.push(window.setTimeout(() => router.push(nextPath), leaveDelayMs))
     }
 
     document.addEventListener('click', onDocumentClick, true)
@@ -144,32 +187,25 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
     const content = contentRef.current
     clearTimers()
+
+    // Run the same fade-in on initial load and route navigations.
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true
+      runEnterAnimation(content)
+      return clearTimers
+    }
+
     animateHeroHeightIfNeeded()
 
-    // Remove any stale leave class and run reliable fade-in.
-    if (content) {
-      content.classList.remove('page-transition-leave', 'page-transition-enter', 'page-transition-enter-start')
-      content.classList.add('page-transition-enter-start')
-      // Force start state to be committed first.
-      content.getBoundingClientRect()
-      rafRef.current = window.requestAnimationFrame(() => {
-        rafRef.current = window.requestAnimationFrame(() => {
-          content.classList.remove('page-transition-enter-start')
-          content.classList.add('page-transition-enter')
-        })
-      })
-      timersRef.current.push(
-        window.setTimeout(() => {
-          content.classList.remove('page-transition-enter')
-        }, FADE_IN_DURATION_MS),
-      )
-    }
+    runEnterAnimation(content)
 
     return clearTimers
   }, [pathname])
 
+  const pageTransitionClassName = 'page-transition page-transition-bg-primary'
+
   return (
-    <div ref={contentRef} className="page-transition" data-transition-region="content">
+    <div ref={contentRef} className={pageTransitionClassName} data-transition-region="content">
       {children}
     </div>
   )
