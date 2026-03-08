@@ -25,6 +25,30 @@ export async function getCMSPageBySlug(slug: string, options?: { bypassFeatureFl
   return result.docs?.[0] ?? null
 }
 
+export async function getCMSAboutUsVideoUrl(): Promise<string | null> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const result = await payload.find({
+      collection: 'pages',
+      limit: 1,
+      pagination: false,
+      depth: 0,
+      where: {
+        slug: { equals: 'about-us' },
+      },
+    })
+
+    const page = result.docs?.[0] as { aboutUsVideoUrl?: unknown } | undefined
+    if (typeof page?.aboutUsVideoUrl === 'string' && page.aboutUsVideoUrl.trim()) {
+      return page.aboutUsVideoUrl.trim()
+    }
+
+    return null
+  } catch {
+    return null
+  }
+}
+
 type HeroCopy = {
   title?: string
   subtitle?: string

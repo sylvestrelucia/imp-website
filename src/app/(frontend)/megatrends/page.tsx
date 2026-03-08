@@ -131,7 +131,7 @@ export default async function MegatrendsPage() {
               <h3 className="text-white font-display font-medium leading-relaxed text-[18px] md:text-[19px]">
                 Investing at the Intersection of Innovation, Demographics, and Sustainability
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-6 md:gap-8">
                 <blockquote className="border-l border-primary-light pl-8 pr-8 text-[#62A8FF] font-thin leading-relaxed text-[18px] md:text-[19px]">
                   At the heart of the IMP Global Megatrend Umbrella Fund is our deep conviction in
                   the power of structural change. We focus on six transformational megatrends that

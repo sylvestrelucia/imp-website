@@ -82,6 +82,18 @@ export const Pages: CollectionConfig<'pages'> = {
           label: 'Content',
         },
         {
+          fields: [
+            {
+              name: 'aboutUsVideoUrl',
+              type: 'text',
+              admin: {
+                description: 'Optional MP4 URL for /about-us video.',
+              },
+            },
+          ],
+          label: 'About Us',
+        },
+        {
           name: 'meta',
           label: 'SEO',
           fields: [

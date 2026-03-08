@@ -6,6 +6,7 @@ type FrontendPageSeed = {
   title: string
   hero: string
   sections: string[]
+  aboutUsVideoUrl?: string
 }
 
 const frontendPages: FrontendPageSeed[] = [
@@ -20,7 +21,7 @@ const frontendPages: FrontendPageSeed[] = [
         'Fund Administrator: VP Fund Solutions (Liechtenstein) AG',
         'Custodian Bank: VP Bank (Liechtenstein) AG',
         'Audit Company: Grant Thornton AG',
-        'Lichtenstein: FMA Approved',
+        'Liechtenstein: FMA Approved',
         'Switzerland: FINMA Approved',
         'Tax Transparency: CH, LI',
         'Sales Restrictions: USA',
@@ -226,6 +227,8 @@ const frontendPages: FrontendPageSeed[] = [
       'Stefan Wiederkehr: Portfolio Manager since 2016 with over 17 years in finance and asset management, including executive and portfolio management positions in Liechtenstein.',
       'Karin B. Wiederkehr: Portfolio Manager with over 23 years in finance, asset management and strategic investing, combining portfolio expertise with private equity and governance leadership.',
     ],
+    aboutUsVideoUrl:
+      'https://video.wixstatic.com/video/c3fe54_6ee2161638ae4f7598a5423325996d3e/1080p/mp4/file.mp4',
   },
   {
     slug: 'contact-us',
@@ -351,6 +354,7 @@ export async function migrateFrontendPagesToCMS(payload: Payload): Promise<{
           title: page.title,
           description: getMetaDescription(page.sections),
         },
+        ...(page.aboutUsVideoUrl ? { aboutUsVideoUrl: page.aboutUsVideoUrl } : {}),
       }
 
       if (existing.docs[0]) {

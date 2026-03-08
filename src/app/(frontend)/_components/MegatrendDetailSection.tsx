@@ -47,13 +47,17 @@ export function MegatrendDetailSection({
                   Megatrend {index + 1}
                 </p>
                 <h2 className="md:hidden text-[24px] leading-[1.25] text-[#0b1035] mb-2">{trend.title}</h2>
-                <p className="text-[#0040ff] text-[17px] mb-5">{trend.subtitle}</p>
-                <div className="space-y-3 text-[#2b3045] leading-relaxed">
+                <p className="mb-5 [font-family:var(--font-display-regular)] text-[19px] md:text-[20px] text-[#0040ff]">
+                  {trend.subtitle}
+                </p>
+                <div className="space-y-3 text-[17px] md:text-[16px] text-[#2b3045] leading-relaxed">
                   {trend.description.map((para, i) => (
                     <p key={i}>{para}</p>
                   ))}
                 </div>
-                <p className="pt-3 text-[#2b3045] leading-relaxed font-medium">{trend.conclusion}</p>
+                <p className="pt-3 text-[17px] md:text-[16px] text-[#2b3045] leading-relaxed font-medium">
+                  {trend.conclusion}
+                </p>
               </div>
             </div>
           </div>

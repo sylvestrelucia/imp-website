@@ -23,7 +23,7 @@ function ChartTooltip({
 
 export function AllocationDonut({
   data,
-  size = 220,
+  size = 260,
   activeIndex,
   onActiveIndexChange,
 }: {

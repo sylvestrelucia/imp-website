@@ -25,7 +25,7 @@ export async function ExploreMegatrendsCard() {
 
   return (
     <div className="flex flex-col items-center text-center">
-      <h3 className="text-[20px] md:text-[22px] text-[#0b1035] mb-4">{cms.exploreMegatrendsCard.title}</h3>
+      <h3 className="mb-4 text-[17px] md:text-[19px] text-[#5f6477]">{cms.exploreMegatrendsCard.title}</h3>
       <img
         src={cms.exploreMegatrendsCard.imageUrl}
         alt={cms.exploreMegatrendsCard.title}
@@ -46,8 +46,8 @@ export async function BottomGrid() {
     >
       <div aria-hidden className="hidden md:block absolute inset-y-0 left-1/3 w-px bg-[#e8ecf4]" />
       <div aria-hidden className="hidden md:block absolute inset-y-0 left-2/3 w-px bg-[#e8ecf4]" />
-      <div className="container">
-        <div className="grid md:grid-cols-3 gap-10 lg:gap-14">
+      <div className="w-full px-4 md:px-6 lg:container">
+        <div className="grid md:grid-cols-3 gap-10 lg:gap-14 [&>*+*]:relative [&>*+*]:before:absolute [&>*+*]:before:content-[''] [&>*+*]:before:top-0 [&>*+*]:before:-left-4 [&>*+*]:before:-right-4 [&>*+*]:before:border-t [&>*+*]:before:border-[#d9def0] md:[&>*+*]:before:hidden">
           {/* See Performance */}
           <BottomGridColumn title="See Performance">
             <Image
@@ -96,16 +96,17 @@ export async function BottomGrid() {
             </div>
             <div className="flex flex-col items-center space-y-4">
               {cms.downloads.map((d) => (
-                <ActionLinkButton
-                  key={d.label}
-                  href={d.href}
-                  label={d.label}
-                  icon="download"
-                  external
-                  iconBefore
-                  buttonVariant="outlineMuted"
-                  className="justify-center px-3 py-2.5 text-[11px] sm:px-4 sm:text-[12px] md:px-5 md:text-[13px]"
-                />
+                <div key={d.label}>
+                  <ActionLinkButton
+                    href={d.href}
+                    label={d.label}
+                    icon="download"
+                    external
+                    iconBefore
+                    buttonVariant="outlineMuted"
+                    className="justify-center px-3 py-2.5 text-[11px] sm:px-4 sm:text-[12px] md:px-5 md:text-[13px]"
+                  />
+                </div>
               ))}
             </div>
           </BottomGridColumn>

@@ -65,13 +65,16 @@ export function StrategyStepSection({ step, index, total }: StrategyStepSectionP
                 </span>
                 <span aria-hidden className="w-px self-stretch bg-[#d9def0]" />
               </div>
-              <div className="flex-1 self-start pb-5 md:pb-6">
+              <div className="flex-1 self-start pb-8 md:pb-6">
+                <div className="mb-5 flex items-center justify-center md:hidden">
+                  <img src={step.src} alt={step.title} className="w-full h-auto object-contain" />
+                </div>
                 <h2 className="md:hidden text-[24px] leading-[1.25] text-[#0b1035] mb-5">{step.title}</h2>
                 <div className="space-y-5">
                   {step.items.map((item) => (
                     <div key={item.heading}>
                       <h3 className="text-[16px] font-semibold text-[#0b1035] mb-1">{item.heading}</h3>
-                      <p className="text-[#2b3045] text-[15px] leading-relaxed">{item.body}</p>
+                      <p className="text-[#2b3045] text-[17px] md:text-[15px] leading-relaxed">{item.body}</p>
                     </div>
                   ))}
                 </div>
@@ -80,7 +83,7 @@ export function StrategyStepSection({ step, index, total }: StrategyStepSectionP
           </div>
 
           <div
-            className={`flex items-center justify-center ${isReversed ? 'lg:pr-8' : 'lg:pl-8'}`}
+            className={`hidden md:flex items-center justify-center ${isReversed ? 'lg:pr-8' : 'lg:pl-8'}`}
             style={isReversed ? { direction: 'ltr' } : undefined}
           >
             <img src={step.src} alt={step.title} className="w-full h-auto object-contain" />

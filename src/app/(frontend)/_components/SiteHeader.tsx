@@ -91,7 +91,7 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
             className={`w-full rounded-none ${transparentBg ? 'bg-transparent' : 'bg-primary/85'} text-white pointer-events-auto`}
           >
             <nav className="hidden lg:flex w-full bg-transparent text-white items-stretch justify-start">
-              <div className="inline-flex overflow-hidden rounded-none border-r border-secondary">
+              <div className="flex w-full overflow-hidden rounded-none border-r border-secondary">
                 {desktopHeaderNav.map((item, index) => {
                   const isActive = item.href === '/'
                     ? pathname === '/'
@@ -100,7 +100,7 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`group [font-family:var(--font-display-regular)] inline-flex flex-col xl:flex-row items-center justify-center whitespace-normal xl:whitespace-nowrap bg-transparent px-6 py-2 xl:py-3 text-[15px] font-medium text-white text-center gap-1 xl:gap-2 border-t-[5px] transition-[border-top-width] duration-200 ${
+                      className={`group [font-family:var(--font-display-regular)] inline-flex flex-1 min-w-0 flex-col xl:flex-row items-center justify-center whitespace-normal xl:whitespace-nowrap bg-transparent px-4 xl:px-5 py-2 xl:py-3 text-[15px] font-medium text-white text-center gap-1 xl:gap-2 border-t-[5px] transition-[border-top-width] duration-200 ${
                         index > 0 ? 'border-l border-secondary' : ''
                       } ${
                         isActive
@@ -118,11 +118,10 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                   )
                 })}
               </div>
-              <div className="flex-1 bg-transparent border-t-[5px] border-b border-secondary" />
             </nav>
 
             <div className="container w-full py-3 lg:py-4 flex items-center justify-between gap-4 lg:gap-6">
-              <Link href="/" className="block shrink-0">
+              <Link href="/" className="block flex-1 min-w-0 lg:flex-none lg:shrink-0">
                 <div className="hidden lg:flex items-center gap-2.5 h-[44px] mt-6">
                   <svg
                     className="size-[44px] shrink-0 overflow-visible"
@@ -149,32 +148,39 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                     <span className="[font-family:var(--font-display-regular)] font-normal">Umbrella Fund</span>
                   </span>
                 </div>
-                <div className="lg:hidden flex items-center gap-2.5 h-[34px]">
+                <div className="lg:hidden flex min-w-0 items-center gap-2.5 h-[44px]">
                   <svg
-                    className="size-[34px] shrink-0"
+                    className="size-[44px] shrink-0 overflow-visible"
                     viewBox="0 0 28 28"
                     role="img"
                     aria-label="IMP logo mark"
                   >
-                    <path
-                      fill="#ffffff"
-                      d="M16.091 28C22.668 28 28 22.668 28 16.091c0-6.576-5.332-11.908-11.909-11.908-6.576 0-11.908 5.332-11.908 11.908C4.183 22.668 9.515 28 16.09 28"
-                    />
-                    <path
-                      fill="#ffffff"
-                      d="M4.708 27.474c-6.274-6.274-6.274-16.48 0-22.765A15.97 15.97 0 0 1 16.091 0c4.309 0 8.343 1.669 11.383 4.709L25.863 6.32C20.468.949 11.703.949 6.32 6.331s-5.383 14.149 0 19.532z"
-                    />
+                    <g
+                      className="animate-[logo-spin-once_900ms_cubic-bezier(0.22,1,0.36,1)_1]"
+                      style={{ transformOrigin: '16.091px 16.091px', transformBox: 'view-box' }}
+                    >
+                      <path
+                        fill="#ffffff"
+                        d="M16.091 28C22.668 28 28 22.668 28 16.091c0-6.576-5.332-11.908-11.909-11.908-6.576 0-11.908 5.332-11.908 11.908C4.183 22.668 9.515 28 16.09 28"
+                      />
+                      <path
+                        fill="#ffffff"
+                        d="M4.708 27.474c-6.274-6.274-6.274-16.48 0-22.765A15.97 15.97 0 0 1 16.091 0c4.309 0 8.343 1.669 11.383 4.709L25.863 6.32C20.468.949 11.703.949 6.32 6.331s-5.383 14.149 0 19.532z"
+                      />
+                    </g>
                   </svg>
-                  <span className="font-display font-semibold text-[15px] leading-[1.05] tracking-[0.01em] text-white whitespace-nowrap">
+                  <span className="min-w-0 font-display font-semibold text-[17px] leading-[1.05] tracking-[0.01em] text-white whitespace-normal">
                     IMP Global Megatrend{' '}
-                    <span className="[font-family:var(--font-display-regular)] font-normal">Umbrella Fund</span>
+                    <span className="[font-family:var(--font-display-regular)] font-normal whitespace-nowrap">
+                      Umbrella Fund
+                    </span>
                   </span>
                 </div>
               </Link>
 
               {/* Mobile hamburger */}
               <button
-                className="lg:hidden flex items-center justify-center w-12 h-12 -mr-1 rounded-full transition-colors cursor-pointer"
+                className="lg:hidden shrink-0 flex items-center justify-center w-12 h-12 -mr-1 rounded-full transition-colors cursor-pointer"
                 onClick={toggleMenu}
                 aria-label={menuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={menuOpen}

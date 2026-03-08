@@ -1,24 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AllocationDonut } from './AllocationCharts'
 
 type TopHolding = [string, string, string]
 
 export function TopHoldingsSection({ holdings }: { holdings: TopHolding[] }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 1024px)')
+    const update = () => setIsDesktop(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center">
+    <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-center">
       <div className="shrink-0">
         <AllocationDonut
           data={holdings}
-          size={320}
+          size={isDesktop ? 320 : 260}
           activeIndex={activeIndex}
           onActiveIndexChange={setActiveIndex}
         />
       </div>
-      <div className="flex-1 mt-5 lg:mt-0 overflow-hidden border-y border-[#d9def0] text-sm font-display text-[#2b3045]">
+      <div className="w-full flex-1 overflow-hidden border-y border-[#d9def0] text-sm font-display text-[#2b3045]">
         {holdings.map(([name, pct, color], index, arr) => (
           <div
             key={name}

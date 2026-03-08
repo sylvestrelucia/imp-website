@@ -251,6 +251,10 @@ export interface Page {
     media?: (number | null) | Media;
   };
   layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  /**
+   * Optional MP4 URL for /about-us video.
+   */
+  aboutUsVideoUrl?: string | null;
   meta?: {
     title?: string | null;
     /**
@@ -2893,6 +2897,7 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
       };
+  aboutUsVideoUrl?: T;
   meta?:
     | T
     | {

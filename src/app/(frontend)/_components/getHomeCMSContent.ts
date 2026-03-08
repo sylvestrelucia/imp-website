@@ -59,7 +59,7 @@ const fallbackHomeContent: HomeCMSContent = {
     { label: 'Fund Administrator', value: 'VP Fund Solutions (Liechtenstein) AG' },
     { label: 'Custodian Bank', value: 'VP Bank (Liechtenstein) AG' },
     { label: 'Audit Company', value: 'Grant Thornton AG' },
-    { label: 'Lichtenstein', value: 'FMA Approved' },
+    { label: 'Liechtenstein', value: 'FMA Approved' },
     { label: 'Switzerland', value: 'FINMA Approved' },
     { label: 'Tax Transparency', value: 'CH, LI' },
     { label: 'Sales Restrictions', value: 'USA' },

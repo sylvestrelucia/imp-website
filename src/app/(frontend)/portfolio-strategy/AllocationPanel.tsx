@@ -15,6 +15,7 @@ export function AllocationPanel({ title, data }: AllocationPanelProps) {
 
   return (
     <div>
+      <div className="mb-4 h-px -mx-4 w-[calc(100%+2rem)] bg-[#d9def0] md:hidden" />
       <h3 className="text-[12px] uppercase tracking-[0.12em] text-[#5f6477] mb-4">{title}</h3>
       <AllocationDonut data={data} activeIndex={activeIndex} onActiveIndexChange={setActiveIndex} />
       <div className="mt-5 overflow-hidden border-y border-[#d9def0] text-sm font-display text-[#2b3045]">

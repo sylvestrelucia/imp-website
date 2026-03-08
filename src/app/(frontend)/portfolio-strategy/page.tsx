@@ -145,9 +145,9 @@ export default async function PortfolioStrategyPage() {
         </div>
 
         {/* Investment Process */}
-        <section className="bg-[#f5f7ff] py-16 md:py-20">
+        <section className="bg-[#f5f7ff] pt-10 pb-16 md:pt-12 md:pb-20">
           <div className="container">
-            <h2 className="text-[28px] leading-[1.2] text-[#0b1035] mb-8 text-center">
+            <h2 className="text-[28px] leading-[1.2] text-[#0b1035] mb-8 text-left md:text-center">
               Investment Process
             </h2>
             <InvestmentProcessTimeline items={investmentProcess} />
@@ -155,8 +155,8 @@ export default async function PortfolioStrategyPage() {
         </section>
 
         {/* Portfolio Overview */}
-        <section className="container py-16 md:py-20">
-          <h2 className="text-center text-[24px] md:text-[28px] leading-[1.2] text-[#0b1035] mb-6">
+        <section className="container pt-10 pb-16 md:pt-12 md:pb-20">
+          <h2 className="text-left md:text-center text-[24px] md:text-[28px] leading-[1.2] text-[#0b1035] mb-6">
             Portfolio Overview
           </h2>
           <div className="grid lg:grid-cols-3 gap-8">
@@ -173,7 +173,7 @@ export default async function PortfolioStrategyPage() {
         </section>
 
         {/* Top Holdings */}
-        <section className="bg-white border-t border-[#d9def0] py-16 md:py-20">
+        <section className="bg-white border-t border-[#d9def0] pt-10 pb-16 md:pt-12 md:pb-20">
           <div className="container">
             <h2 className="text-[28px] leading-[1.2] text-[#0b1035] mb-8">Top Holdings</h2>
             <TopHoldingsSection holdings={topHoldings} />

@@ -4,7 +4,7 @@ import {
   getCMSPerformancePageData,
 } from '../_components/getCMSPageBySlug'
 import { CMSPageContent } from '../_components/CMSPageContent'
-import { PageHero, PageHeroMeta } from '../_components/PageHero'
+import { PageHero } from '../_components/PageHero'
 import { ActionLinkButton } from '../_components/ActionLinkButton'
 import { PerformanceChart } from './PerformanceChart'
 
@@ -96,7 +96,9 @@ function NavUpdatesCard({ data }: { data: ShareClassDetails }) {
       <div className="flex items-baseline gap-2">
         <span className="text-[36px] font-semibold text-[#0b1035]">{data.nav}</span>
       </div>
-      <p className="text-[13px] text-[#5f6477] mt-1">NAV per Share *</p>
+      <p className="text-[13px] text-[#5f6477] mt-1">
+        NAV per Share <span className="text-[#0040ff]">*</span>
+      </p>
     </div>
   )
 }
@@ -104,12 +106,17 @@ function NavUpdatesCard({ data }: { data: ShareClassDetails }) {
 function PerformanceMetricsCard({ data }: { data: ShareClassDetails }) {
   return (
     <div className="font-display">
+      <div className="mb-4 h-px w-full bg-[#d9def0]" />
       <h3 className="text-[14px] uppercase tracking-[0.12em] text-[#5f6477] mb-4">Performance Metrics</h3>
-      <p className="text-[13px] text-[#5f6477] mb-4">* per {data.asOf}</p>
+      <p className="text-[13px] text-[#5f6477] mb-4">
+        <span className="text-[#0040ff]">*</span> per {data.asOf}
+      </p>
       <div className="grid grid-cols-1 gap-4">
         <div>
           <p className="text-[28px] font-semibold text-[#0b1035]">{data.perfYTD}</p>
-          <p className="text-[13px] text-[#5f6477]">Performance YTD *</p>
+          <p className="text-[13px] text-[#5f6477]">
+            Performance YTD <span className="text-[#0040ff]">*</span>
+          </p>
         </div>
       </div>
     </div>
@@ -119,23 +126,32 @@ function PerformanceMetricsCard({ data }: { data: ShareClassDetails }) {
 function RiskMetricsCard({ data }: { data: ShareClassDetails }) {
   return (
     <div className="font-display">
+      <div className="mb-4 h-px w-full bg-[#d9def0]" />
       <h3 className="text-[14px] uppercase tracking-[0.12em] text-[#5f6477] mb-4">Risk Metrics</h3>
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="text-[28px] font-semibold text-[#0b1035]">{data.sharpe}</p>
-          <p className="text-[13px] text-[#5f6477]">Sharpe Ratio **</p>
+          <p className="text-[13px] text-[#5f6477]">
+            Sharpe Ratio <span className="text-[#0040ff]">**</span>
+          </p>
         </div>
         <div>
           <p className="text-[28px] font-semibold text-[#0b1035]">{data.volatility}</p>
-          <p className="text-[13px] text-[#5f6477]">Volatility **</p>
+          <p className="text-[13px] text-[#5f6477]">
+            Volatility <span className="text-[#0040ff]">**</span>
+          </p>
         </div>
         <div>
           <p className="text-[28px] font-semibold text-[#0b1035]">{data.sortino}</p>
-          <p className="text-[13px] text-[#5f6477]">Sortino Ratio **</p>
+          <p className="text-[13px] text-[#5f6477]">
+            Sortino Ratio <span className="text-[#0040ff]">**</span>
+          </p>
         </div>
         <div>
           <p className="text-[28px] font-semibold text-[#0b1035]">{data.downsideRisk}</p>
-          <p className="text-[13px] text-[#5f6477]">Downside Risk **</p>
+          <p className="text-[13px] text-[#5f6477]">
+            Downside Risk <span className="text-[#0040ff]">**</span>
+          </p>
         </div>
       </div>
     </div>
@@ -144,9 +160,9 @@ function RiskMetricsCard({ data }: { data: ShareClassDetails }) {
 
 function FundDetailsCard({ data }: { data: ShareClassDetails }) {
   return (
-    <div className="h-full font-display">
+    <div className="h-full border-t border-[#d9def0] pt-4 font-display">
       <h3 className="text-[14px] uppercase tracking-[0.12em] text-[#5f6477] mb-4">Fund Details</h3>
-      <div className="divide-y divide-[#d9def0]">
+      <div className="divide-y divide-[#d9def0] border-b border-[#d9def0]">
         {data.fundDetails.map(([k, v]) => (
           <div key={k} className="flex justify-between gap-4 py-3">
             <span className="text-[14px] text-[#5f6477]">{k}</span>
@@ -172,7 +188,10 @@ export default async function PerformancePage() {
   const usdDetails = mergeShareClassDetails(usdFallbackDetails, cmsPerformanceData?.usd)
   const chfTitle = cmsPerformanceData?.chfLabel || 'CHF Hedged Share Class'
   const usdTitle = cmsPerformanceData?.usdLabel || 'USD Share Class'
-  const performanceTitle = cmsPerformanceData?.annualPerformanceTitle || 'Annual Performance Graph (2016–2025)'
+  const performanceTitleRaw = cmsPerformanceData?.annualPerformanceTitle || 'Annual Performance Graph (2016-2026)'
+  const performanceTitle = performanceTitleRaw
+    .replace(/2016[–-]2025/g, '2016-2026')
+    .replace(/\s*\(2016-2026\)\s*$/g, '')
   const heroTitle = cmsPerformanceData?.pageTitle || 'Delivering Results Over the Long Term'
 
   return (
@@ -181,16 +200,30 @@ export default async function PerformancePage() {
           title={heroTitle}
           palette={{ color1: '#2b3dea', color2: 'oklch(0.46 0.14 330)', color3: 'oklch(0.46 0.12 280)' }}
         >
-          <PageHeroMeta items={[chfTitle, usdTitle]} />
+          <span
+            className="mt-6 block whitespace-nowrap text-white text-[19px] md:text-[21px] leading-[1.6]"
+            data-transition-force="true"
+          >
+            {chfTitle} &amp; {usdTitle}
+          </span>
         </PageHero>
 
         {/* Performance graphs */}
-        <section className="container pt-8 md:pt-10 pb-8">
-          <h2 className="text-[22px] leading-[1.3] text-[#0b1035] mb-6">{performanceTitle}</h2>
-          <PerformanceChart
-            usdSeries={cmsPerformanceSeries.usd}
-            chfSeries={cmsPerformanceSeries.chf}
-          />
+        <section className="pt-8 md:pt-10 pb-8">
+          <div className="container">
+            <h2 className="mb-6 flex flex-wrap items-center gap-2 text-[22px] leading-[1.3] text-[#0b1035]">
+              <span>{performanceTitle}</span>
+              <span className="inline-flex items-center border border-[#d9def0] bg-white px-2.5 py-1 text-[12px] text-[#2b3045]">
+                2016-2026
+              </span>
+            </h2>
+          </div>
+          <div className="w-full md:container">
+            <PerformanceChart
+              usdSeries={cmsPerformanceSeries.usd}
+              chfSeries={cmsPerformanceSeries.chf}
+            />
+          </div>
         </section>
 
         {/* Share Class Details */}
@@ -207,6 +240,7 @@ export default async function PerformancePage() {
             <span aria-hidden className="pointer-events-none absolute left-1/2 -top-8 bottom-0 hidden w-px -translate-x-1/2 bg-[#d9def0] lg:block" />
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
               <div className="space-y-8 pt-4 lg:pt-6 lg:pr-8">
+                <img src="/images/flags/ch.svg" alt="Swiss flag" className="h-5 w-auto" loading="lazy" />
                 <h2 className="text-[26px] leading-[1.2] text-[#0b1035]">{chfTitle}</h2>
                 <NavUpdatesCard data={chfDetails} />
                 <PerformanceMetricsCard data={chfDetails} />
@@ -214,6 +248,8 @@ export default async function PerformancePage() {
                 <FundDetailsCard data={chfDetails} />
               </div>
               <div className="space-y-8 pt-4 lg:pt-6 lg:pl-8">
+                <div className="-mx-4 h-px w-[calc(100%+2rem)] bg-[#d9def0] lg:hidden" />
+                <img src="/images/flags/us.svg" alt="United States flag" className="h-5 w-auto" loading="lazy" />
                 <h2 className="text-[26px] leading-[1.2] text-[#0b1035]">{usdTitle}</h2>
                 <NavUpdatesCard data={usdDetails} />
                 <PerformanceMetricsCard data={usdDetails} />
@@ -227,8 +263,13 @@ export default async function PerformancePage() {
         {/* Regulatory footnotes */}
         <section className="bg-white py-10">
           <div className="container text-[13px] text-[#5f6477] space-y-2">
-            <p>* Net of all fees. Past performance is not indicative of future results.</p>
-            <p>** Based on annualized data where applicable.</p>
+            <p>
+              <span className="text-[#0040ff]">*</span> Net of all fees. Past performance is not indicative of
+              future results.
+            </p>
+            <p>
+              <span className="text-[#0040ff]">**</span> Based on annualized data where applicable.
+            </p>
           </div>
         </section>
 
