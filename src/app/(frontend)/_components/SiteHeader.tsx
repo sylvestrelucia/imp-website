@@ -45,25 +45,40 @@ function splitLabel(label: string): [string, string?] {
 }
 
 export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
+  const MENU_CONTAINER_MS = 300
+  const MENU_ITEM_TRANSITION_MS = 300
+  const MENU_ITEM_STAGGER_MS = 55
+  const MENU_ITEM_INITIAL_DELAY_MS = 70
   const [transparentBg, setTransparentBg] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [menuExpanded, setMenuExpanded] = useState(false)
+  const [menuItemsVisible, setMenuItemsVisible] = useState(false)
   const [hoveredDesktopItem, setHoveredDesktopItem] = useState<string | null>(null)
   const pathname = usePathname()
+  const menuAnimationTimeoutRef = useRef<number | null>(null)
   const nav = (navItems?.length
     ? navItems.map((item) => {
         const [line1, line2] = splitLabel(item.label)
         return { ...item, label: [line1, line2] as [string, string?] }
       })
     : []) as Array<{ href: string; label: [string, string?]; newTab?: boolean }>
+  const navWithoutHome = nav.filter((item) => item.href !== '/')
+  const mobileMenuItems = [
+    { href: '/', label: ['Home'] as [string, string?] },
+    ...navWithoutHome,
+    { href: '/newsletter-subscription', label: ['Subscribe to Newsletter'] as [string, string?] },
+  ]
 
   useEffect(() => {
     setMenuOpen(false)
+    setMenuExpanded(false)
+    setMenuItemsVisible(false)
     setTransparentBg(true)
     setHoveredDesktopItem(null)
   }, [pathname])
 
   useEffect(() => {
-    if (menuOpen) {
+    if (menuExpanded) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
@@ -71,7 +86,37 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
     return () => {
       document.body.style.overflow = ''
     }
-  }, [menuOpen])
+  }, [menuExpanded])
+
+  useEffect(() => {
+    if (menuAnimationTimeoutRef.current) {
+      window.clearTimeout(menuAnimationTimeoutRef.current)
+      menuAnimationTimeoutRef.current = null
+    }
+
+    if (menuOpen) {
+      setMenuExpanded(true)
+      menuAnimationTimeoutRef.current = window.setTimeout(() => {
+        setMenuItemsVisible(true)
+      }, MENU_CONTAINER_MS)
+      return
+    }
+
+    // Close choreography: hide items first, then collapse container.
+    setMenuItemsVisible(false)
+    const longestExitDelay = (mobileMenuItems.length - 1) * MENU_ITEM_STAGGER_MS
+    const collapseDelay = longestExitDelay + MENU_ITEM_TRANSITION_MS
+    menuAnimationTimeoutRef.current = window.setTimeout(() => {
+      setMenuExpanded(false)
+    }, collapseDelay)
+
+    return () => {
+      if (menuAnimationTimeoutRef.current) {
+        window.clearTimeout(menuAnimationTimeoutRef.current)
+        menuAnimationTimeoutRef.current = null
+      }
+    }
+  }, [menuOpen, mobileMenuItems.length, MENU_CONTAINER_MS, MENU_ITEM_STAGGER_MS, MENU_ITEM_TRANSITION_MS])
 
   const toggleMenu = useCallback(() => setMenuOpen((prev) => !prev), [])
 
@@ -203,34 +248,35 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
       <div
         className="fixed inset-0 z-40 lg:hidden flex flex-col transition-all duration-300"
         style={{
-          opacity: menuOpen ? 1 : 0,
-          pointerEvents: menuOpen ? 'auto' : 'none',
+          opacity: menuExpanded ? 1 : 0,
+          pointerEvents: menuExpanded ? 'auto' : 'none',
         }}
       >
         <div className="absolute inset-0 overflow-hidden pointer-events-none bg-[#2b3dea]" />
         <nav
           className="container relative z-10 mt-28 flex flex-col gap-1 transition-all duration-300"
           style={{
-            transform: menuOpen ? 'translateY(0)' : 'translateY(-20px)',
+            transform: menuExpanded ? 'translateY(0)' : 'translateY(-20px)',
           }}
         >
-          {nav.map((item) => (
+          {mobileMenuItems.map((item, index) => (
             <Link
               key={item.href}
               href={item.href}
               target={item.newTab ? '_blank' : undefined}
               rel={item.newTab ? 'noopener noreferrer' : undefined}
-              className="[font-family:var(--font-display-regular)] text-[20px] font-light text-white/90 hover:text-white transition-colors py-3 border-b border-white/10"
+              className="[font-family:var(--font-display-regular)] text-[20px] font-light text-white/90 hover:text-white transition-[color,opacity,transform] duration-300 ease-out motion-reduce:transition-none py-3 border-b border-white/10"
+              style={{
+                opacity: menuItemsVisible ? 1 : 0,
+                transform: menuItemsVisible ? 'translateY(0)' : 'translateY(10px)',
+                transitionDelay: menuItemsVisible
+                  ? `${MENU_ITEM_INITIAL_DELAY_MS + index * MENU_ITEM_STAGGER_MS}ms`
+                  : `${(mobileMenuItems.length - 1 - index) * MENU_ITEM_STAGGER_MS}ms`,
+              }}
             >
               {item.label.filter(Boolean).join(' ')}
             </Link>
           ))}
-          <Link
-            href="/newsletter-subscription"
-            className="[font-family:var(--font-display-regular)] text-[20px] font-light text-white/90 hover:text-white transition-colors py-3 border-b border-white/10"
-          >
-            Subscribe to Newsletter
-          </Link>
         </nav>
       </div>
     </>

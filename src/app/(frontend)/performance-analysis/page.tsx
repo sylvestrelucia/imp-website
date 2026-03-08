@@ -133,7 +133,7 @@ function RiskMetricsCard({ data }: { data: ShareClassDetails }) {
 
 function FundDetailsCard({ data }: { data: ShareClassDetails }) {
   return (
-    <div className="h-full border-t border-[#d9def0] pt-4 font-display">
+    <div className="border-t border-[#d9def0] pt-4 font-display">
       <h3 className="text-[14px] uppercase tracking-[0.12em] text-[#5f6477] mb-4">
         {performanceContent.cards.fundDetailsTitle}
       </h3>
@@ -193,7 +193,7 @@ export default async function PerformancePage() {
               </span>
             </h2>
           </div>
-          <div className="w-full md:container">
+          <div className="w-full">
             <PerformanceChart
               usdSeries={cmsPerformanceSeries.usd}
               chfSeries={cmsPerformanceSeries.chf}
