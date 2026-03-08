@@ -10,24 +10,24 @@ export const WixDataItems: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    useAsTitle: 'wixItemId',
-    defaultColumns: ['wixCollectionId', 'wixItemId', 'updatedAt'],
+    useAsTitle: 'sourceItemId',
+    defaultColumns: ['sourceCollectionId', 'sourceItemId', 'updatedAt'],
   },
   fields: [
     {
-      name: 'wixCollectionId',
+      name: 'sourceCollectionId',
       type: 'text',
       required: true,
       index: true,
     },
     {
-      name: 'wixItemId',
+      name: 'sourceItemId',
       type: 'text',
       required: true,
       index: true,
     },
     {
-      name: 'wixUpdatedAt',
+      name: 'sourceUpdatedAt',
       type: 'date',
       admin: {
         date: {
@@ -43,7 +43,7 @@ export const WixDataItems: CollectionConfig = {
   ],
   indexes: [
     {
-      fields: ['wixCollectionId', 'wixItemId'],
+      fields: ['sourceCollectionId', 'sourceItemId'],
       unique: true,
     },
   ],

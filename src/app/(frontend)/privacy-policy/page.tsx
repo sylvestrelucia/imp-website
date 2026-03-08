@@ -36,6 +36,10 @@ export default async function PrivacyPage() {
       return Array.isArray(columns) ? columns : []
     })
     .filter((column) => Boolean((column as { richText?: unknown }).richText))
+  const fallbackSections = Array.isArray(fallbacks.privacyPolicy?.sections)
+    ? fallbacks.privacyPolicy.sections.filter((item): item is string => typeof item === 'string' && item.trim() !== '')
+    : []
+  const shouldRenderFallbackSections = contentColumns.length === 0 && fallbackSections.length > 0
 
   return (
     <main className="bg-white text-[#0b1035]">
@@ -61,7 +65,12 @@ export default async function PrivacyPage() {
               />
             )
           })}
-          </div>
+          {shouldRenderFallbackSections
+            ? fallbackSections.map((section, index) => (
+                <p key={`privacy-fallback-${index}`}>{section}</p>
+              ))
+            : null}
+        </div>
       </div>
     </main>
   )

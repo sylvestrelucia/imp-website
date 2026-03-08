@@ -457,23 +457,74 @@ export async function getCMSFundDetails(): Promise<FundDetailItem[] | null> {
   }
 }
 
-function resolveCMSImageUrl(value: string): string {
-  if (!value) return ''
-  if (value.startsWith('http://') || value.startsWith('https://')) return value
+function resolveSupabasePublicMediaUrl(filename: string): string | null {
+  if (!filename) return null
 
-  if (value.startsWith('wix:image://')) {
-    const parts = value.replace('wix:image://v1/', '').split('/')
+  const endpoint = process.env.S3_ENDPOINT
+  const bucket = process.env.S3_BUCKET
+  if (!endpoint || !bucket) return null
+
+  try {
+    const endpointUrl = new URL(endpoint)
+    const baseOrigin = endpointUrl.origin
+    const encodedFilename = filename
+      .split('/')
+      .map((segment) => encodeURIComponent(segment))
+      .join('/')
+
+    return `${baseOrigin}/storage/v1/object/public/${bucket}/${encodedFilename}`
+  } catch {
+    return null
+  }
+}
+
+function normalizeSourceForMediaLookup(source: string): string {
+  if (source.startsWith('wix:image://')) {
+    const parts = source.replace('wix:image://v1/', '').split('/')
     const fileId = parts[0]
-    if (fileId) {
-      return `https://static.wixstatic.com/media/${fileId}`
-    }
+    if (fileId) return `https://static.wixstatic.com/media/${fileId}`
+  }
+  return source
+}
+
+async function resolveCMSImageUrlFromMedia(
+  payload: Awaited<ReturnType<typeof getPayload>>,
+  source: string,
+): Promise<string> {
+  if (!source) return ''
+  if (source.startsWith('/')) return source
+
+  if (
+    (source.startsWith('http://') || source.startsWith('https://')) &&
+    source.includes('/storage/v1/object/public/')
+  ) {
+    return source
   }
 
-  if (value.includes('.')) {
-    return `https://static.wixstatic.com/media/${value}`
+  const normalizedSource = normalizeSourceForMediaLookup(source)
+  const mediaBySource = await payload.find({
+    collection: 'media',
+    limit: 1,
+    pagination: false,
+    depth: 0,
+    where: {
+      or: [{ sourceUrl: { equals: source } }, { sourceUrl: { equals: normalizedSource } }],
+    },
+  })
+
+  const mediaDoc = mediaBySource.docs?.[0] as { url?: unknown; filename?: unknown } | undefined
+  const mediaFilename = mediaDoc?.filename
+  if (typeof mediaFilename === 'string' && mediaFilename.trim() !== '') {
+    const supabaseMediaUrl = resolveSupabasePublicMediaUrl(mediaFilename)
+    if (supabaseMediaUrl) return supabaseMediaUrl
   }
 
-  return value
+  const mediaUrl = mediaDoc?.url
+  if (typeof mediaUrl === 'string' && mediaUrl.trim() !== '') {
+    return mediaUrl
+  }
+
+  return ''
 }
 
 function getTextFieldValue(
@@ -521,7 +572,7 @@ export async function getCMSMegatrendImageVariantsByTitle(): Promise<
         getTextFieldValue(doc.textFields, 'image_fld')
       if (!title || !imageSource) continue
 
-      const resolved = resolveCMSImageUrl(imageSource)
+      const resolved = await resolveCMSImageUrlFromMedia(payload, imageSource)
       if (!resolved) continue
       byTitle[title] = { ...(byTitle[title] ?? {}), blue: resolved }
     }
@@ -539,7 +590,7 @@ export async function getCMSMegatrendImageVariantsByTitle(): Promise<
         getTextFieldValue(doc.textFields, 'image_fld')
       if (!title || !imageSource) continue
 
-      const resolved = resolveCMSImageUrl(imageSource)
+      const resolved = await resolveCMSImageUrlFromMedia(payload, imageSource)
       if (!resolved) continue
       byTitle[title] = { ...(byTitle[title] ?? {}), white: resolved }
     }

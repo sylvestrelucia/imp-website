@@ -199,7 +199,7 @@ export const Pages: CollectionConfig<'pages'> = {
       },
     },
     {
-      name: 'wixId',
+      name: 'sourceId',
       type: 'text',
       index: true,
       admin: {
@@ -207,7 +207,7 @@ export const Pages: CollectionConfig<'pages'> = {
       },
     },
     {
-      name: 'wixUpdatedAt',
+      name: 'sourceUpdatedAt',
       type: 'date',
       admin: {
         position: 'sidebar',
@@ -231,7 +231,7 @@ export const Pages: CollectionConfig<'pages'> = {
   },
   indexes: [
     {
-      fields: ['wixId'],
+      fields: ['sourceId'],
       unique: true,
     },
   ],

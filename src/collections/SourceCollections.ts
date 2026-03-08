@@ -2,84 +2,84 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '../access/authenticated'
 
 export interface WixCollectionDefinition {
-  wixCollectionId: string
+  sourceCollectionId: string
   slug: string
   label: string
 }
 
 export const wixCollectionDefinitions: WixCollectionDefinition[] = [
-  { wixCollectionId: 'AboutUsList', slug: 'wix-about-us-list', label: 'Wix About Us List' },
-  { wixCollectionId: 'ContactUs', slug: 'wix-contact-us', label: 'Wix Contact Us' },
+  { sourceCollectionId: 'AboutUsList', slug: 'wix-about-us-list', label: 'Wix About Us List' },
+  { sourceCollectionId: 'ContactUs', slug: 'wix-contact-us', label: 'Wix Contact Us' },
   {
-    wixCollectionId: 'CountrySelection',
+    sourceCollectionId: 'CountrySelection',
     slug: 'wix-country-selection',
     label: 'Wix Country Selection',
   },
-  { wixCollectionId: 'FundAttributes', slug: 'wix-fund-attributes', label: 'Wix Fund Attributes' },
-  { wixCollectionId: 'FundDetails', slug: 'wix-fund-details', label: 'Wix Fund Details' },
+  { sourceCollectionId: 'FundAttributes', slug: 'wix-fund-attributes', label: 'Wix Fund Attributes' },
+  { sourceCollectionId: 'FundDetails', slug: 'wix-fund-details', label: 'Wix Fund Details' },
   {
-    wixCollectionId: 'GeographicAllocations',
+    sourceCollectionId: 'GeographicAllocations',
     slug: 'wix-geographic-allocations',
     label: 'Wix Geographic Allocations',
   },
-  { wixCollectionId: 'Homepagelinks', slug: 'wix-homepage-links', label: 'Wix Homepage Links' },
-  { wixCollectionId: 'Import1', slug: 'wix-import-usd', label: 'Wix Import USD' },
-  { wixCollectionId: 'ImportCHF', slug: 'wix-import-chf', label: 'Wix Import CHF' },
+  { sourceCollectionId: 'Homepagelinks', slug: 'wix-homepage-links', label: 'Wix Homepage Links' },
+  { sourceCollectionId: 'Import1', slug: 'wix-import-usd', label: 'Wix Import USD' },
+  { sourceCollectionId: 'ImportCHF', slug: 'wix-import-chf', label: 'Wix Import CHF' },
   {
-    wixCollectionId: 'InvestmentProcess',
+    sourceCollectionId: 'InvestmentProcess',
     slug: 'wix-investment-process',
     label: 'Wix Investment Process',
   },
   {
-    wixCollectionId: 'LegalInformmation',
+    sourceCollectionId: 'LegalInformmation',
     slug: 'wix-legal-information',
     label: 'Wix Legal Information',
   },
   {
-    wixCollectionId: 'MegatrendDataset',
+    sourceCollectionId: 'MegatrendDataset',
     slug: 'wix-megatrend-dataset',
     label: 'Wix Megatrend Dataset',
   },
   {
-    wixCollectionId: 'MegatrendsAllocations',
+    sourceCollectionId: 'MegatrendsAllocations',
     slug: 'wix-megatrends-allocations',
     label: 'Wix Megatrends Allocations',
   },
   {
-    wixCollectionId: 'MegatrendsDetail',
+    sourceCollectionId: 'MegatrendsDetail',
     slug: 'wix-megatrends-detail',
     label: 'Wix Megatrends Detail',
   },
-  { wixCollectionId: 'Members/Badges', slug: 'wix-members-badges', label: 'Wix Members Badges' },
+  { sourceCollectionId: 'Members/Badges', slug: 'wix-members-badges', label: 'Wix Members Badges' },
   {
-    wixCollectionId: 'Members/FullData',
+    sourceCollectionId: 'Members/FullData',
     slug: 'wix-members-full-data',
     label: 'Wix Members Full Data',
   },
   {
-    wixCollectionId: 'Members/PrivateMembersData',
+    sourceCollectionId: 'Members/PrivateMembersData',
     slug: 'wix-members-private-data',
     label: 'Wix Members Private Data',
   },
   {
-    wixCollectionId: 'Members/PublicData',
+    sourceCollectionId: 'Members/PublicData',
     slug: 'wix-members-public-data',
     label: 'Wix Members Public Data',
   },
-  { wixCollectionId: 'MenuList', slug: 'wix-menu-list', label: 'Wix Menu List' },
+  { sourceCollectionId: 'MenuList', slug: 'wix-menu-list', label: 'Wix Menu List' },
   {
-    wixCollectionId: 'PortfolioStrategyProcess',
+    sourceCollectionId: 'PortfolioStrategyProcess',
     slug: 'wix-portfolio-strategy-process',
     label: 'Wix Portfolio Strategy Process',
   },
-  { wixCollectionId: 'PrivacyPolicy', slug: 'wix-privacy-policy', label: 'Wix Privacy Policy' },
+  { sourceCollectionId: 'PrivacyPolicy', slug: 'wix-privacy-policy', label: 'Wix Privacy Policy' },
   {
-    wixCollectionId: 'SectorAllocations',
+    sourceCollectionId: 'SectorAllocations',
     slug: 'wix-sector-allocations',
     label: 'Wix Sector Allocations',
   },
-  { wixCollectionId: 'TopHoldings', slug: 'wix-top-holdings', label: 'Wix Top Holdings' },
-  { wixCollectionId: 'TrustList', slug: 'wix-trust-list', label: 'Wix Trust List' },
+  { sourceCollectionId: 'TopHoldings', slug: 'wix-top-holdings', label: 'Wix Top Holdings' },
+  { sourceCollectionId: 'TrustList', slug: 'wix-trust-list', label: 'Wix Trust List' },
 ]
 
 function buildWixCollection(def: WixCollectionDefinition): CollectionConfig {
@@ -96,29 +96,29 @@ function buildWixCollection(def: WixCollectionDefinition): CollectionConfig {
       update: authenticated,
     },
     admin: {
-      useAsTitle: 'wixItemId',
-      defaultColumns: ['wixItemId', 'updatedAt'],
+      useAsTitle: 'sourceItemId',
+      defaultColumns: ['sourceItemId', 'updatedAt'],
       group: 'Wix',
     },
     fields: [
       {
-        name: 'wixCollectionId',
+        name: 'sourceCollectionId',
         type: 'text',
         required: true,
-        defaultValue: def.wixCollectionId,
+        defaultValue: def.sourceCollectionId,
         index: true,
         admin: {
           readOnly: true,
         },
       },
       {
-        name: 'wixItemId',
+        name: 'sourceItemId',
         type: 'text',
         required: true,
         index: true,
       },
       {
-        name: 'wixUpdatedAt',
+        name: 'sourceUpdatedAt',
         type: 'date',
       },
       {
@@ -187,7 +187,7 @@ function buildWixCollection(def: WixCollectionDefinition): CollectionConfig {
     ],
     indexes: [
       {
-        fields: ['wixItemId'],
+        fields: ['sourceItemId'],
         unique: true,
       },
     ],
@@ -195,7 +195,7 @@ function buildWixCollection(def: WixCollectionDefinition): CollectionConfig {
 }
 
 export const wixCollectionSlugById = Object.fromEntries(
-  wixCollectionDefinitions.map((def) => [def.wixCollectionId, def.slug]),
+  wixCollectionDefinitions.map((def) => [def.sourceCollectionId, def.slug]),
 ) as Record<string, string>
 
 export const WixCollections: CollectionConfig[] = wixCollectionDefinitions.map(buildWixCollection)

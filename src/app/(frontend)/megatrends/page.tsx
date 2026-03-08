@@ -56,9 +56,9 @@ export default async function MegatrendsPage() {
               trend={{
                 ...trend,
                 icon:
-                  trend.icon ||
                   trendImageVariantsByTitle[trend.title]?.blue ||
                   trendImageVariantsByTitle[trend.title]?.white ||
+                  trend.icon ||
                   '',
               }}
               reverse={idx % 2 === 1}

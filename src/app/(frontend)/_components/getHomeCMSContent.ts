@@ -106,8 +106,8 @@ function resolveCMSImageUrl(value: string): string {
     return value.includes('/storage/v1/object/public/') ? value : ''
   }
 
-  // Preserve source tokens and let resolveMediaUrlFromSource map them to Supabase media.
-  if (value.startsWith('wix:image://') || value.startsWith('wix:document://')) return value
+  // Disallow Wix tokens in frontend content; CMS rows should already reference local media URLs.
+  if (value.startsWith('wix:image://') || value.startsWith('wix:document://')) return ''
   if (value.includes('.')) return value
 
   return value
@@ -524,6 +524,20 @@ function resolveSupabasePublicMediaUrl(filename: string): string | null {
   }
 }
 
+function normalizeMediaLookupSource(source: string): string {
+  if (source.startsWith('wix:image://v1/')) {
+    const fileId = source.replace('wix:image://v1/', '').split('/')[0]
+    return fileId ? `https://static.wixstatic.com/media/${fileId}` : source
+  }
+
+  if (source.startsWith('wix:document://v1/ugd/')) {
+    const fileId = source.replace('wix:document://v1/ugd/', '').split('/')[0]
+    return fileId ? `https://www.impgmtfund.com/_files/ugd/${fileId}` : source
+  }
+
+  return source
+}
+
 async function resolveMediaUrlFromSource(
   payload: Awaited<ReturnType<typeof getPayload>>,
   source: string,
@@ -537,15 +551,30 @@ async function resolveMediaUrlFromSource(
     return source
   }
 
-  const mediaBySource = await payload.find({
+  const lookupSource = normalizeMediaLookupSource(source)
+
+  let mediaBySource = await payload.find({
     collection: 'media',
     limit: 1,
     pagination: false,
     depth: 0,
     where: {
-      wixSourceUrl: { equals: source },
+      sourceUrl: { equals: lookupSource },
     },
   })
+
+  // Backward-compatible fallback in case legacy rows stored raw tokens.
+  if ((mediaBySource.docs?.length ?? 0) === 0 && lookupSource !== source) {
+    mediaBySource = await payload.find({
+      collection: 'media',
+      limit: 1,
+      pagination: false,
+      depth: 0,
+      where: {
+        sourceUrl: { equals: source },
+      },
+    })
+  }
 
   const mediaDoc = mediaBySource.docs?.[0] as { url?: unknown; filename?: unknown } | undefined
   const mediaFilename = mediaDoc?.filename

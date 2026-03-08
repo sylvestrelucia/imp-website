@@ -47,6 +47,36 @@
     "legalInformation": "Regulatory & Legal Information",
     "privacyPolicySubtitle": "Data Protection Statement of MRB Fund Partners AG"
   },
+  "privacyPolicy": {
+    "sections": [
+      "Data Protection Statement of MRB Fund Partners AG",
+      "Version effective as of 01 February 2025",
+      "With this Data Protection Statement we, MRB Fund Partners AG (hereinafter \"MRB Fund Partners\", we or us), describe how we collect and further process personal data.",
+      "This Privacy Notice is aligned with the EU General Data Protection Regulation (GDPR), the Swiss Data Protection Act (DPA) and the revised Swiss Data Protection (revDPA).",
+      "1. Controller / Data Protection Officer / Representative",
+      "The controller of data processing is MRB Fund Partners AG, Fraumunsterstrasse 9, CH-8001 Zurich, info@mrbpartner.ch.",
+      "2. Collection and Processing of Personal Data",
+      "We primarily process personal data obtained from clients, business partners, public sources and website usage where legally permitted.",
+      "3. Purpose of Data Processing and Legal Grounds",
+      "We process personal data to provide services, fulfill contracts, comply with legal obligations, and where necessary on the basis of consent or legitimate interests.",
+      "4. Cookies / Tracking and Other Techniques Regarding the Use of our Website",
+      "We use cookies, analytics and similar technologies to operate and improve our website and communications.",
+      "5. Datatransfer and Transfer of Data Abroad",
+      "Data may be transferred to service providers and group entities in Switzerland and abroad, including Europe and the USA, with appropriate safeguards.",
+      "6. Retention Periods for your Personal Data",
+      "We retain personal data as long as required for contractual performance, legal obligations, documentation and legitimate business interests.",
+      "7. Data Security",
+      "We apply appropriate technical and organizational measures to protect personal data from unauthorized access and misuse.",
+      "8. Obligation to Provide Personal Data To Us",
+      "Where required for a relationship or service, you must provide personal data; otherwise services or contracts may not be possible.",
+      "9. Profiling and Automated Individual Decision-Making",
+      "We may process data in part automatically (profiling) to improve communication, advisory quality and relevance of information.",
+      "10. Your Rights",
+      "Subject to applicable law, you have rights including access, rectification, erasure, restriction, objection and data portability.",
+      "11. Amendments of this Data Protection Statement",
+      "We may update this statement at any time; the current website version applies."
+    ]
+  },
   "home": {
     "hero": {
       "heading": "Investing in the World of Tomorrow Today",
