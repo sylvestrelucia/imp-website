@@ -79,6 +79,7 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
       alt: altFromResource,
       filename: filenameFromResource,
       height: fullHeight,
+      sourceUrl,
       url,
       width: fullWidth,
     } = resource
@@ -91,8 +92,11 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
       'Media image'
 
     const cacheTag = resource.updatedAt
+    const normalizedSourceUrl = typeof sourceUrl === 'string' && sourceUrl.trim() ? sourceUrl.trim() : ''
+    const normalizedStorageUrl = typeof url === 'string' && url.trim() ? url.trim() : ''
 
-    src = getMediaUrl(url, cacheTag)
+    // Prefer canonical source URL from CMS. Fall back to stored file URL only when missing.
+    src = getMediaUrl(normalizedSourceUrl || normalizedStorageUrl, cacheTag)
   }
 
   const loading = loadingFromProps || (!priority ? 'lazy' : undefined)
