@@ -137,12 +137,12 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`group [font-family:var(--font-display-regular)] inline-flex flex-1 min-w-0 flex-col xl:flex-row items-center justify-center whitespace-normal xl:whitespace-nowrap bg-transparent px-4 xl:px-5 py-2 xl:py-3 text-[15px] font-medium text-white text-center gap-1 xl:gap-2 border-t-[5px] border-t-secondary border-b transition-colors duration-200 hover:bg-white hover:text-[#0b1035] focus-visible:bg-white focus-visible:text-[#0b1035] active:bg-white active:text-[#0b1035] ${
+                      className={`group [font-family:var(--font-display-regular)] inline-flex flex-1 min-w-0 flex-col xl:flex-row items-center justify-center whitespace-normal xl:whitespace-nowrap bg-transparent px-4 xl:px-5 py-2 xl:py-3 text-[15px] font-medium text-white text-center gap-1 xl:gap-2 border-t-[5px] border-t-secondary border-b transition-colors duration-200 ${
                         index > 0 ? 'border-l border-secondary' : ''
                       } ${
                         isActive
                           ? 'border-b-transparent'
-                          : 'border-b-secondary'
+                          : 'border-b-secondary hover:bg-white hover:text-[#0b1035] focus-visible:bg-white focus-visible:text-[#0b1035] active:bg-white active:text-[#0b1035]'
                       }`}
                       onMouseEnter={() => setHoveredDesktopItem(item.href)}
                       onMouseLeave={() => setHoveredDesktopItem((prev) => (prev === item.href ? null : prev))}
