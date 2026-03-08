@@ -1,45 +1,67 @@
 import { getCMSPageBySlug } from '../_components/getCMSPageBySlug'
-import { CMSPageContent } from '../_components/CMSPageContent'
 import { PageHero } from '../_components/PageHero'
+import RichText from '@/components/RichText'
+import { notFound } from 'next/navigation'
+
+function removeH1HeadingsFromRichText(richText: unknown): unknown {
+  if (!richText || typeof richText !== 'object') return richText
+
+  const root = (richText as { root?: { children?: unknown[] } }).root
+  if (!root || !Array.isArray(root.children)) return richText
+
+  const filteredChildren = root.children.filter((node) => {
+    if (!node || typeof node !== 'object') return true
+    const record = node as { type?: string; tag?: string }
+    return !(record.type === 'heading' && record.tag === 'h1')
+  })
+
+  return {
+    ...(richText as Record<string, unknown>),
+    root: {
+      ...(root as Record<string, unknown>),
+      children: filteredChildren,
+    },
+  }
+}
 
 export default async function PrivacyPage() {
-  const cmsPage = await getCMSPageBySlug('privacy-policy')
-  if (cmsPage) {
-    return <CMSPageContent page={cmsPage as never} />
-  }
+  const cmsPage = await getCMSPageBySlug('privacy-policy', { bypassFeatureFlag: true })
+  if (!cmsPage) notFound()
+
+  const contentColumns = (Array.isArray(cmsPage.layout) ? cmsPage.layout : [])
+    .flatMap((block) => {
+      if ((block as { blockType?: string }).blockType !== 'content') return []
+      const columns = (block as { columns?: unknown[] }).columns
+      return Array.isArray(columns) ? columns : []
+    })
+    .filter((column) => Boolean((column as { richText?: unknown }).richText))
 
   return (
     <main className="bg-white text-[#0b1035]">
-        <PageHero
-          title="Privacy Policy"
-          subtitle="Data Protection Statement of MRB Fund Partners AG"
-          palette={{ color1: '#2b3dea', color2: 'oklch(0.45 0.13 355)', color3: 'oklch(0.45 0.12 36)' }}
-          subtitleClassName="max-w-none"
-        />
+      <PageHero
+        title={cmsPage.title || 'Privacy Policy'}
+        subtitle="Data Protection Statement of MRB Fund Partners AG"
+        palette={{ color1: '#2b3dea', color2: 'oklch(0.45 0.13 355)', color3: 'oklch(0.45 0.12 36)' }}
+        subtitleClassName="max-w-none"
+      />
 
-        <div className="container py-16 md:py-20 max-w-4xl">
-          <div className="space-y-6 text-[#2b3045] text-[15px] leading-relaxed">
-            <p>
-              We describe how personal data is collected and processed in line with GDPR, Swiss DPA
-              and revDPA.
-            </p>
-            <p>
-              Personal data is processed for contractual, legal, operational and communication
-              purposes, including client servicing, compliance and infrastructure security.
-            </p>
-            <p>
-              We may use cookies and analytics tools to improve site operation and user experience.
-            </p>
-            <p>
-              Data may be transferred to service providers in Switzerland, Europe and the USA with
-              appropriate safeguards.
-            </p>
-            <p>
-              Data subjects may request access, rectification, deletion, restriction, objection and
-              portability where applicable.
-            </p>
+      <div className="container py-16 md:py-20 max-w-4xl">
+        <div className="space-y-8 text-[#2b3045] text-[15px] leading-relaxed">
+          {contentColumns.map((column, index) => {
+            const richText = (column as { richText?: unknown }).richText
+            if (!richText) return null
+
+            return (
+              <RichText
+                key={`privacy-content-${index}`}
+                data={removeH1HeadingsFromRichText(richText) as never}
+                enableGutter={false}
+                className="max-w-none prose md:prose-md text-[#2b3045]"
+              />
+            )
+          })}
           </div>
-        </div>
+      </div>
     </main>
   )
 }

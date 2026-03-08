@@ -1,6 +1,7 @@
 import { getCMSPageBySlug } from '../_components/getCMSPageBySlug'
 import { CMSPageContent } from '../_components/CMSPageContent'
 import { PageHero } from '../_components/PageHero'
+import { ActionLinkButton } from '../_components/ActionLinkButton'
 
 const stefanCerts = [
   'Certificate Analyzing and Benchmarking Financial Information, New York Institute of Finance',
@@ -17,10 +18,10 @@ const karinCerts = [
 ]
 
 const highlights = [
-  'Entrepreneurial, owner-led, deeply client-focused family office',
-  '20+ years of combined experience fund management',
-  'Independent portfolio manager',
-  'Based in Zürich – Switzerland & Vaduz – Liechtenstein',
+  'Top-down macro framework combined with bottom-up company selection',
+  'High-conviction portfolios built around structural megatrend exposure',
+  'Independent risk governance with disciplined rebalancing',
+  'Cross-border execution from Zürich and Liechtenstein',
 ]
 
 export default async function AboutUsPage() {
@@ -137,39 +138,41 @@ export default async function AboutUsPage() {
           </section>
         </div>
 
-        {/* Highlights */}
-        <section className="bg-[#f5f7ff] py-16 md:py-20">
+        {/* CTA */}
+        <section className="border-t border-[#d9def0] pt-10 pb-10 text-center md:pt-12 md:pb-12">
           <div className="container">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {highlights.map((item) => (
-                <div
-                  key={item}
-                  className="bg-white rounded-xl border border-[#d9def0] p-6 text-center"
-                >
-                  <p className="text-[15px] text-[#0b1035] font-medium leading-snug">{item}</p>
-                </div>
-              ))}
+            <h3 className="mb-5 text-center text-[20px] md:text-[22px] text-[#0b1035]">Related Links</h3>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <ActionLinkButton
+                href="/contact-us"
+                label="Request a call"
+                icon="chartLine"
+                buttonVariant="outlineMuted"
+              />
+              <ActionLinkButton
+                href="https://www.linkedin.com"
+                label="Connect on LinkedIn"
+                icon="trendingUp"
+                external
+                buttonVariant="outlineMuted"
+              />
             </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="container py-16 md:py-20 text-center">
-          <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="/contact-us"
-              className="px-6 py-3 rounded bg-[#0040ff] text-white text-[14px] font-medium"
-            >
-              Request a call
-            </a>
-            <a
-              href="https://www.linkedin.com"
-              rel="noreferrer"
-              target="_blank"
-              className="px-6 py-3 rounded border border-[#d9def0] text-[14px] font-medium text-[#0b1035] hover:bg-[#f5f7ff]"
-            >
-              Connect on LinkedIn
-            </a>
+        {/* Highlights */}
+        <section className="bg-secondary py-20 md:py-24">
+          <div className="container">
+            <div className="grid grid-cols-1 gap-5 text-left md:grid-cols-2 xl:grid-cols-4">
+              {highlights.map((item) => (
+                <p
+                  key={item}
+                  className="[font-family:var(--font-display-regular)] border-l border-primary-light pl-5 font-light text-[18px] leading-relaxed text-white"
+                >
+                  {item}
+                </p>
+              ))}
+            </div>
           </div>
         </section>
     </main>

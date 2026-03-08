@@ -2,9 +2,9 @@ import configPromise from '@payload-config'
 import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 
-export async function getCMSPageBySlug(slug: string) {
+export async function getCMSPageBySlug(slug: string, options?: { bypassFeatureFlag?: boolean }) {
   // Keep styled hardcoded pages as default until CMS content is modeled 1:1.
-  if (process.env.ENABLE_FRONTEND_CMS_PAGES !== 'true') {
+  if (!options?.bypassFeatureFlag && process.env.ENABLE_FRONTEND_CMS_PAGES !== 'true') {
     return null
   }
 

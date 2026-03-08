@@ -149,9 +149,9 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                     <span className="[font-family:var(--font-display-regular)] font-normal">Umbrella Fund</span>
                   </span>
                 </div>
-                <div className="lg:hidden flex items-center gap-2 h-[28px]">
+                <div className="lg:hidden flex items-center gap-2.5 h-[34px]">
                   <svg
-                    className="size-[28px] shrink-0"
+                    className="size-[34px] shrink-0"
                     viewBox="0 0 28 28"
                     role="img"
                     aria-label="IMP logo mark"
@@ -165,7 +165,7 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                       d="M4.708 27.474c-6.274-6.274-6.274-16.48 0-22.765A15.97 15.97 0 0 1 16.091 0c4.309 0 8.343 1.669 11.383 4.709L25.863 6.32C20.468.949 11.703.949 6.32 6.331s-5.383 14.149 0 19.532z"
                     />
                   </svg>
-                  <span className="font-display font-semibold text-[13px] leading-[1.05] tracking-[0.01em] text-white whitespace-nowrap">
+                  <span className="font-display font-semibold text-[15px] leading-[1.05] tracking-[0.01em] text-white whitespace-nowrap">
                     IMP Global Megatrend{' '}
                     <span className="[font-family:var(--font-display-regular)] font-normal">Umbrella Fund</span>
                   </span>
@@ -179,11 +179,23 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
                 aria-label={menuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={menuOpen}
               >
-                {menuOpen ? (
-                  <AnimatedIcon name="x" size={22} className="text-white" />
-                ) : (
-                  <AnimatedIcon name="menu" size={22} className="text-white" />
-                )}
+                <span className="relative block h-[22px] w-[22px]" aria-hidden="true">
+                  <span
+                    className={`absolute left-0 top-[3px] h-[2px] w-full rounded-full bg-white transition-transform duration-300 ease-out ${
+                      menuOpen ? 'translate-y-[8px] rotate-45' : ''
+                    }`}
+                  />
+                  <span
+                    className={`absolute left-0 top-[10px] h-[2px] w-full rounded-full bg-white transition-all duration-250 ease-out ${
+                      menuOpen ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100'
+                    }`}
+                  />
+                  <span
+                    className={`absolute left-0 top-[17px] h-[2px] w-full rounded-full bg-white transition-transform duration-300 ease-out ${
+                      menuOpen ? '-translate-y-[6px] -rotate-45' : ''
+                    }`}
+                  />
+                </span>
               </button>
             </div>
           </div>

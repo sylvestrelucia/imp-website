@@ -251,13 +251,54 @@ const frontendPages: FrontendPageSeed[] = [
   {
     slug: 'legal-information',
     title: 'Regulatory & Legal Information',
-    hero: 'Regulatory and legal information for website visitors.',
+    hero: 'Regulatory & Legal Information',
     sections: [
-      'This website is for informational purposes only and does not constitute an offer, recommendation, or solicitation to buy or sell securities.',
-      'The portfolio management of the IMP Global Megatrend Umbrella Fund is entrusted to MRB Fund Partners AG. In related materials, "we" and "our" refer to MRB Fund Partners AG in relation to regulated portfolio management activities.',
-      'Client categories under FinSA include retail, professional and institutional clients, each with different levels of protection and eligibility for financial services.',
-      'Investing in securities involves risk; past performance is not indicative of future results and investors may lose all or part of their investment.',
-      'Disputes are subject to Swiss law and Swiss courts.',
+      [
+        'This website is for informational purposes only. The information presented here is not an offer, advice, recommendation, or a solicitation to buy or sell securities, fund units or any other financial instruments. All our investment strategies are intended only for professional investors.',
+        'The portfolio management of the IMP Global Megatrend Umbrella Fund is entrusted to MRB Fund Partners AG. In this website and all related marketing materials, the pronouns "we," "us," and "our" refer exclusively to MRB Fund Partners AG in relation to any investment decisions and regulated portfolio-management activities.',
+      ].join('\n\n'),
+      [
+        'Regulatory Information',
+        'The aim of this document is to deliver details in line with obligations under the Financial Services Act ("FinSA"). It includes insights about MRB Fund Partners AG and the services offered. This notice is solely for informing clients about how applicable statutory requirements on investor protection are implemented under FinSA and/or other regulatory frameworks.',
+        'It does not constitute an offer or solicitation by or on behalf of MRB Fund Partners AG to use a service, buy or sell funds or any financial instruments, or participate in a specific trading strategy in any jurisdiction.',
+      ].join('\n\n'),
+      [
+        'Financial services according to FinSA',
+        'FinSA governs the offering of financial services and instruments to clients and applies to those who provide financial services, advise clients, and create financial instruments. Under FinSA, relevant financial services include: acquisition or disposal of financial instruments; receipt and transmission of orders; portfolio management; investment advice; and granting loans to finance transactions with financial instruments. Fund units are also covered by FinSA.',
+      ].join('\n\n'),
+      [
+        'Services offered by MRB Fund Partners',
+        'When selling funds, MRB Fund Partners may provide a financial service covered by FinSA, namely the acquisition and disposal of collective investment schemes (funds). MRB Fund Partners does not provide additional services such as investment advice or discretionary portfolio management unless these services are explicitly included in a formal contract agreement.',
+      ].join('\n\n'),
+      [
+        'Client classification',
+        'MRB Fund Partners classifies clients into retail (private), professional, and institutional categories. Retail clients have the highest level of protection; professional clients are expected to have relevant investment knowledge and experience; institutional clients have the lowest level of regulatory protection due to assumed sophistication and risk-bearing capacity.',
+        'Clients may request a change in classification where legal requirements are met.',
+      ].join('\n\n'),
+      [
+        'Opting-In / Opting-Out Options',
+        'According to FinSA, certain clients may opt in or opt out of classifications, subject to statutory criteria and required declarations.',
+        'Retail clients may opt out to professional status in specific high-net-worth cases. Professional clients may opt in to retail status or opt in/out to institutional status in specific cases. Institutional clients may opt in/out to professional status where permitted.',
+      ].join('\n\n'),
+      [
+        'Ombudsman',
+        'MRB Fund Partners AG is affiliated with an ombudsman recognized by the Swiss Federal Department of Finance. Clients may bring unresolved issues to:',
+        'Finanzombudsstelle Schweiz (FINOS), Talstrasse 20, 8001 Zurich, Switzerland, +41 44 552 08 00, www.finos.ch',
+      ].join('\n\n'),
+      [
+        'Risks & Other relevant information',
+        'This information is provided for informational purposes only and does not constitute an offer, recommendation, advice, or solicitation to buy or sell any securities or financial instruments. It is intended for use by investors in Switzerland and the European Union in accordance with applicable laws and regulations, including MiFID and local legislation.',
+        'Any content may contain marketing information within the meaning of MiFID II or FIDLEG. It is not intended for distribution in jurisdictions where such distribution would be unlawful. Investing in securities and financial instruments involves risk, and past performance is not indicative of future results.',
+      ].join('\n\n'),
+      [
+        'Forward-looking statements',
+        'This content may contain forward-looking statements involving risks and uncertainties. Actual results may differ materially from those anticipated. There is no obligation to update or revise forward-looking statements.',
+      ].join('\n\n'),
+      [
+        'No liability',
+        'MRB Fund Partners AG and its affiliates, directors, officers, employees, and agents accept no liability for direct, indirect, or consequential losses or damages arising from use of or reliance on this information. No representation or warranty is made as to accuracy, completeness, or reliability.',
+        'This disclaimer is governed by Swiss law, and disputes are subject to the exclusive jurisdiction of Swiss courts.',
+      ].join('\n\n'),
     ],
   },
 ]
