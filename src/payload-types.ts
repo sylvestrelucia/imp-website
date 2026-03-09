@@ -75,6 +75,7 @@ export interface Config {
     'content-gate-submissions': ContentGateSubmission;
     'contact-submissions': ContactSubmission;
     'newsletter-subscriptions': NewsletterSubscription;
+    'resend-webhook-events': ResendWebhookEvent;
     'home-megatrend-cards': HomeMegatrendCard;
     'megatrend-detail-blocks': MegatrendDetailBlock;
     'performance-nav-points': PerformanceNavPoint;
@@ -135,6 +136,7 @@ export interface Config {
     'content-gate-submissions': ContentGateSubmissionsSelect<false> | ContentGateSubmissionsSelect<true>;
     'contact-submissions': ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     'newsletter-subscriptions': NewsletterSubscriptionsSelect<false> | NewsletterSubscriptionsSelect<true>;
+    'resend-webhook-events': ResendWebhookEventsSelect<false> | ResendWebhookEventsSelect<true>;
     'home-megatrend-cards': HomeMegatrendCardsSelect<false> | HomeMegatrendCardsSelect<true>;
     'megatrend-detail-blocks': MegatrendDetailBlocksSelect<false> | MegatrendDetailBlocksSelect<true>;
     'performance-nav-points': PerformanceNavPointsSelect<false> | PerformanceNavPointsSelect<true>;
@@ -1524,6 +1526,37 @@ export interface NewsletterSubscription {
   userAgent?: string | null;
   path?: string | null;
   submittedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resend-webhook-events".
+ */
+export interface ResendWebhookEvent {
+  id: number;
+  eventType: string;
+  webhookCreatedAt?: string | null;
+  emailId?: string | null;
+  from?: string | null;
+  to?:
+    | {
+        address: string;
+        id?: string | null;
+      }[]
+    | null;
+  subject?: string | null;
+  svixId: string;
+  payload:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  receivedAt: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -3613,6 +3646,10 @@ export interface PayloadLockedDocument {
         value: number | NewsletterSubscription;
       } | null)
     | ({
+        relationTo: 'resend-webhook-events';
+        value: number | ResendWebhookEvent;
+      } | null)
+    | ({
         relationTo: 'home-megatrend-cards';
         value: number | HomeMegatrendCard;
       } | null)
@@ -4307,6 +4344,28 @@ export interface NewsletterSubscriptionsSelect<T extends boolean = true> {
   userAgent?: T;
   path?: T;
   submittedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "resend-webhook-events_select".
+ */
+export interface ResendWebhookEventsSelect<T extends boolean = true> {
+  eventType?: T;
+  webhookCreatedAt?: T;
+  emailId?: T;
+  from?: T;
+  to?:
+    | T
+    | {
+        address?: T;
+        id?: T;
+      };
+  subject?: T;
+  svixId?: T;
+  payload?: T;
+  receivedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

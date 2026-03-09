@@ -7,7 +7,6 @@ import Script from 'next/script'
 import React from 'react'
 
 import { Providers } from '@/providers'
-import { InitTheme } from '@/providers/Theme/InitTheme'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { PageTransition } from './_components/PageTransition'
 import { SiteShell } from './_components/SiteShell'
@@ -39,9 +38,13 @@ const structuredData = [
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
+    <html
+      className={cn(GeistSans.variable, GeistMono.variable)}
+      lang="en"
+      data-theme="light"
+      suppressHydrationWarning
+    >
       <head>
-        <InitTheme />
         <Script id="google-tag-manager" strategy="afterInteractive">
           {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],

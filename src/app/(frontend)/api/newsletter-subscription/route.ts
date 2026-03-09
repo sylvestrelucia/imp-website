@@ -1,6 +1,8 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { headers } from 'next/headers'
+import { sendNewsletterSubscriptionEmails } from '@/utilities/emails/sendFormEmails'
+import { syncNewsletterSubscriberToResend } from '@/utilities/emails/syncContactToResend'
 
 type SubmissionBody = {
   firstName?: string
@@ -93,6 +95,7 @@ export async function POST(req: Request): Promise<Response> {
     const requestHeaders = await headers()
     const userAgent = requestHeaders.get('user-agent') || 'unknown'
     const ipAddress = getClientIP(requestHeaders)
+    const submittedAt = new Date().toISOString()
 
     await payload.create({
       collection: 'newsletter-subscriptions',
@@ -105,9 +108,34 @@ export async function POST(req: Request): Promise<Response> {
         ipAddress,
         userAgent,
         path,
-        submittedAt: new Date().toISOString(),
+        submittedAt,
       },
     } as unknown as Parameters<typeof payload.create>[0])
+
+    try {
+      await syncNewsletterSubscriberToResend({
+        firstName,
+        lastName,
+        email,
+      })
+    } catch (error) {
+      console.error('Failed to sync newsletter subscriber to Resend', error)
+    }
+
+    try {
+      await sendNewsletterSubscriptionEmails({
+        payload,
+        data: {
+          firstName,
+          lastName,
+          email,
+          submittedAt,
+          path,
+        },
+      })
+    } catch (error) {
+      console.error('Failed to send newsletter subscription emails', error)
+    }
 
     return Response.json({ ok: true, alreadySubscribed: false })
   } catch {
