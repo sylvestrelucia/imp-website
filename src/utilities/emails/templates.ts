@@ -29,7 +29,9 @@ const REGULATORY_NOTICE_HEADING = 'Regulatory Notice'
 const REGULATORY_NOTICE_BODY =
   'Portfolio management of the IMP Global Megatrend Umbrella Fund is entrusted to MRB Fund Partners AG. In this document and all related marketing materials, the pronouns "we," "us," and "our" refer exclusively to MRB Fund Partners AG in relation to any investment decisions and regulated portfolio-management activities.'
 const COPYRIGHT_NOTICE = '© 2026 IMP Global Megatrend Umbrella Fund. All rights reserved.'
-const LOGO_PATH = '/original-logo.svg'
+const EMAIL_LOGO_FALLBACK_PATH = '/email-logo.png'
+const SUPABASE_EMAIL_LOGO_URL =
+  'https://yinjxgtldfrsyhrhqfjv.supabase.co/storage/v1/object/public/media/email-logo.png'
 const EMAIL_COLOR_PAGE_BG = '#ffffff'
 const EMAIL_COLOR_CARD_BG = '#ffffff'
 const EMAIL_COLOR_HEADER_BG = '#2b3dea'
@@ -44,10 +46,15 @@ function trimTrailingSlash(value: string): string {
 }
 
 function getLogoUrl(): string {
-  const configuredServerUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL
-  if (!configuredServerUrl) return LOGO_PATH
+  const configuredEmailLogoUrl = process.env.EMAIL_LOGO_URL?.trim()
+  if (configuredEmailLogoUrl) return configuredEmailLogoUrl
 
-  return `${trimTrailingSlash(configuredServerUrl)}${LOGO_PATH}`
+  if (SUPABASE_EMAIL_LOGO_URL) return SUPABASE_EMAIL_LOGO_URL
+
+  const configuredServerUrl = process.env.NEXT_PUBLIC_SERVER_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL
+  if (!configuredServerUrl) return EMAIL_LOGO_FALLBACK_PATH
+
+  return `${trimTrailingSlash(configuredServerUrl)}${EMAIL_LOGO_FALLBACK_PATH}`
 }
 
 function escapeHtml(value: string): string {
