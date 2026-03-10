@@ -29,6 +29,8 @@ const REGULATORY_NOTICE_HEADING = 'Regulatory Notice'
 const REGULATORY_NOTICE_BODY =
   'Portfolio management of the IMP Global Megatrend Umbrella Fund is entrusted to MRB Fund Partners AG. In this document and all related marketing materials, the pronouns "we," "us," and "our" refer exclusively to MRB Fund Partners AG in relation to any investment decisions and regulated portfolio-management activities.'
 const COPYRIGHT_NOTICE = '© 2026 IMP Global Megatrend Umbrella Fund. All rights reserved.'
+const CONFIDENTIALITY_NOTICE =
+  'This email and any attachments may contain confidential information intended solely for the named recipient(s). If you have received this message in error, please notify the sender and delete it immediately. Any unauthorized review, use, disclosure, or distribution is prohibited.'
 const EMAIL_LOGO_FALLBACK_PATH = '/email-logo.png'
 const SUPABASE_EMAIL_LOGO_URL =
   'https://yinjxgtldfrsyhrhqfjv.supabase.co/storage/v1/object/public/media/email-logo.png'
@@ -103,9 +105,10 @@ function renderLayout(title: string, bodyHtml: string): string {
             </tr>
             <tr>
               <td style="padding:12px 28px 24px;border-top:1px solid ${EMAIL_COLOR_BORDER};background-color:${EMAIL_COLOR_TABLE_LABEL_BG};">
-                <p style="margin:0 0 10px;font-size:12px;line-height:1.5;color:${EMAIL_COLOR_TEXT_MUTED};font-weight:400;">${REGULATORY_NOTICE_HEADING}</p>
-                <p style="margin:0 0 10px;font-size:12px;line-height:1.65;color:${EMAIL_COLOR_TEXT_MUTED};">${escapeHtml(REGULATORY_NOTICE_BODY)}</p>
-                <p style="margin:0;font-size:12px;line-height:1.5;color:${EMAIL_COLOR_TEXT_MUTED};">${escapeHtml(COPYRIGHT_NOTICE)}</p>
+                <p style="margin:0 0 10px;font-size:12px;line-height:1.5;color:${EMAIL_COLOR_TEXT_MUTED};">${escapeHtml(COPYRIGHT_NOTICE)}</p>
+                <p style="margin:0 0 6px;font-size:11px;line-height:1.45;color:${EMAIL_COLOR_TEXT_MUTED};font-weight:400;">${REGULATORY_NOTICE_HEADING}</p>
+                <p style="margin:0 0 10px;font-size:11px;line-height:1.55;color:${EMAIL_COLOR_TEXT_MUTED};">${escapeHtml(REGULATORY_NOTICE_BODY)}</p>
+                <p style="margin:0;font-size:10px;line-height:1.5;color:${EMAIL_COLOR_TEXT_MUTED};">${escapeHtml(CONFIDENTIALITY_NOTICE)}</p>
               </td>
             </tr>
           </table>
@@ -131,11 +134,13 @@ function appendRegulatoryNotice(text: string): string {
   return [
     text,
     '',
+    COPYRIGHT_NOTICE,
+    '',
     REGULATORY_NOTICE_HEADING,
     '',
     REGULATORY_NOTICE_BODY,
     '',
-    COPYRIGHT_NOTICE,
+    CONFIDENTIALITY_NOTICE,
   ].join('\n')
 }
 
