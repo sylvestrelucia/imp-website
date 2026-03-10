@@ -938,7 +938,15 @@ function formatPercentValue(value: number): string {
   return rounded.toFixed(2)
 }
 
-function parsePortfolioChartDocs(docs: unknown[]): PortfolioChartTuple[] {
+function parsePortfolioChartDocs(
+  docs: unknown[],
+  options?: {
+    requireColor?: boolean
+  },
+): PortfolioChartTuple[] {
+  const requireColor = options?.requireColor !== false
+  const defaultColor = '#0f3bbf'
+
   return docs
     .map((doc) => {
       const record = (doc && typeof doc === 'object' ? doc : {}) as {
@@ -950,14 +958,20 @@ function parsePortfolioChartDocs(docs: unknown[]): PortfolioChartTuple[] {
       }
       if (typeof record.name !== 'string' || !record.name.trim()) return null
       if (typeof record.weight !== 'number' || !Number.isFinite(record.weight)) return null
-      if (typeof record.color !== 'string' || !record.color.trim()) return null
+      const resolvedColor =
+        typeof record.color === 'string' && record.color.trim()
+          ? record.color.trim()
+          : requireColor
+            ? null
+            : defaultColor
+      if (!resolvedColor) return null
       const sortOrder = typeof record.sortOrder === 'number' && Number.isFinite(record.sortOrder) ? record.sortOrder : 0
 
       return {
         tuple: [
           record.name.trim(),
           formatPercentValue(record.weight),
-          record.color.trim(),
+          resolvedColor,
           typeof record.icon === 'string' && record.icon.trim() ? record.icon.trim() : undefined,
         ] as PortfolioChartTuple,
         weight: record.weight,
@@ -1040,7 +1054,7 @@ export async function getCMSPortfolioStrategyChartData(): Promise<{
       ? parsePortfolioChartDocs(page?.portfolioSectorAllocations as unknown[])
       : []
     const fromLinkedTopHoldings = Array.isArray(page?.portfolioTopHoldings)
-      ? pickTopHoldings(parsePortfolioChartDocs(page?.portfolioTopHoldings as unknown[]), 10)
+      ? pickTopHoldings(parsePortfolioChartDocs(page?.portfolioTopHoldings as unknown[], { requireColor: false }), 10)
       : []
 
     return {

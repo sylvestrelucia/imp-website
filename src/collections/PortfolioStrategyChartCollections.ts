@@ -6,7 +6,56 @@ function buildPortfolioChartCollection(config: {
   slug: string
   singular: string
   plural: string
+  hideColorInAdmin?: boolean
+  includeColorField?: boolean
 }): CollectionConfig {
+  const hideColorInAdmin = Boolean(config.hideColorInAdmin)
+  const includeColorField = config.includeColorField !== false
+  const fields: CollectionConfig['fields'] = [
+    {
+      name: 'name',
+      type: 'text',
+      required: true,
+      unique: true,
+      index: true,
+    },
+    {
+      name: 'weight',
+      type: 'number',
+      required: true,
+      admin: {
+        step: 0.1,
+        description: 'Allocation percentage value (e.g. 24.2).',
+      },
+    },
+    {
+      name: 'icon',
+      type: 'text',
+      admin: {
+        description:
+          'Optional Phosphor icon key for list markers (e.g. cpu, heartbeat, bank, lightning).',
+      },
+    },
+    {
+      name: 'sortOrder',
+      type: 'number',
+      required: true,
+      index: true,
+    },
+  ]
+
+  if (includeColorField) {
+    fields.splice(2, 0, {
+      name: 'color',
+      type: 'text',
+      required: true,
+      admin: {
+        description: 'Hex color used in the chart legend and donut slice.',
+        hidden: hideColorInAdmin,
+      },
+    })
+  }
+
   return {
     slug: config.slug,
     labels: {
@@ -15,7 +64,9 @@ function buildPortfolioChartCollection(config: {
     },
     admin: {
       useAsTitle: 'name',
-      defaultColumns: ['sortOrder', 'name', 'weight', 'color', 'icon', 'updatedAt'],
+      defaultColumns: !includeColorField || hideColorInAdmin
+        ? ['sortOrder', 'name', 'weight', 'icon', 'updatedAt']
+        : ['sortOrder', 'name', 'weight', 'color', 'icon', 'updatedAt'],
       group: 'Portfolio Strategy',
     },
     access: {
@@ -24,46 +75,7 @@ function buildPortfolioChartCollection(config: {
       update: authenticated,
       delete: authenticated,
     },
-    fields: [
-      {
-        name: 'name',
-        type: 'text',
-        required: true,
-        unique: true,
-        index: true,
-      },
-      {
-        name: 'weight',
-        type: 'number',
-        required: true,
-        admin: {
-          step: 0.1,
-          description: 'Allocation percentage value (e.g. 24.2).',
-        },
-      },
-      {
-        name: 'color',
-        type: 'text',
-        required: true,
-        admin: {
-          description: 'Hex color used in the chart legend and donut slice.',
-        },
-      },
-      {
-        name: 'icon',
-        type: 'text',
-        admin: {
-          description:
-            'Optional Phosphor icon key for list markers (e.g. cpu, heartbeat, bank, lightning).',
-        },
-      },
-      {
-        name: 'sortOrder',
-        type: 'number',
-        required: true,
-        index: true,
-      },
-    ],
+    fields,
     defaultSort: 'sortOrder',
     timestamps: true,
   }
@@ -91,4 +103,5 @@ export const PortfolioTopHoldings = buildPortfolioChartCollection({
   slug: 'portfolio-top-holdings',
   singular: 'Portfolio Top Holding',
   plural: 'Portfolio Top Holdings',
+  includeColorField: false,
 })
