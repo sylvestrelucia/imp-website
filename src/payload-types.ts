@@ -196,6 +196,9 @@ export interface Config {
     footer: FooterSelect<false> | FooterSelect<true>;
   };
   locale: null;
+  widgets: {
+    collections: CollectionsWidget;
+  };
   user: User;
   jobs: {
     tasks: {
@@ -276,7 +279,20 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
   };
-  layout?: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[] | null;
+  layout?:
+    | (
+        | CallToActionBlock
+        | ContentBlock
+        | {
+            media: number | Media;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'mediaBlock';
+          }
+        | ArchiveBlock
+        | FormBlock
+      )[]
+    | null;
   /**
    * Optional video file from Media Library for /about-us.
    */
@@ -882,16 +898,6 @@ export interface ContentBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
- */
-export interface MediaBlock {
-  media: number | Media;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'mediaBlock';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ArchiveBlock".
  */
 export interface ArchiveBlock {
@@ -1400,10 +1406,6 @@ export interface PortfolioTopHolding {
    * Allocation percentage value (e.g. 24.2).
    */
   weight: number;
-  /**
-   * Hex color used in the chart legend and donut slice.
-   */
-  color: string;
   /**
    * Optional Phosphor icon key for list markers (e.g. cpu, heartbeat, bank, lightning).
    */
@@ -4531,7 +4533,6 @@ export interface PortfolioSectorAllocationsSelect<T extends boolean = true> {
 export interface PortfolioTopHoldingsSelect<T extends boolean = true> {
   name?: T;
   weight?: T;
-  color?: T;
   icon?: T;
   sortOrder?: T;
   updatedAt?: T;
@@ -6298,6 +6299,16 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TaskSchedulePublish".
  */
 export interface TaskSchedulePublish {
@@ -6317,6 +6328,16 @@ export interface TaskSchedulePublish {
     user?: (number | null) | User;
   };
   output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  media: number | Media;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'mediaBlock';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

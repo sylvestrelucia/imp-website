@@ -209,10 +209,11 @@ async function upsertChartRows(args: {
   for (const [index, row] of args.rows.entries()) {
     const [name, weight, color, icon] = row
     const inferredIcon = inferIcon(args.collection, name)
+    const includeColor = args.collection !== 'portfolio-top-holdings'
     const nextData = {
       name: name.trim(),
       weight: parseWeight(weight),
-      color: color.trim(),
+      ...(includeColor ? { color: color.trim() } : {}),
       icon:
         typeof icon === 'string' && icon.trim()
           ? icon.trim()
@@ -255,7 +256,7 @@ async function upsertChartRows(args: {
     const isSame =
       existingWeight !== null &&
       Math.abs(existingWeight - nextData.weight) < 0.000001 &&
-      existingColor === nextData.color &&
+      (!includeColor || existingColor === color.trim()) &&
       existingIcon === (nextData.icon ?? '') &&
       existingSort === nextData.sortOrder
 
