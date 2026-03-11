@@ -1,38 +1,16 @@
 import type { Metadata } from 'next/types'
 
-import { PageRange } from '@/components/PageRange'
-import { Pagination } from '@/components/Pagination'
 import articlesContent from '@/constants/articles-content.json'
 import fallbacks from '@/constants/fallbacks.json'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 import React from 'react'
-import { ArticlesArchiveLayout } from './_components/ArticlesArchiveLayout'
-import { getArticleCategoryLinks } from './_lib/getArticleCategoryLinks'
+import { ArticlesArchiveLayout } from '@/app/(frontend)/articles/_components/ArticlesArchiveLayout'
+import { getArticleArchivePageData } from '@/app/(frontend)/articles/_lib/getArticleArchivePageData'
 
 export const dynamic = 'force-static'
 export const revalidate = 600
 
 export default async function Page() {
-  const payload = await getPayload({ config: configPromise })
-
-  const posts = await payload.find({
-    collection: 'posts',
-    depth: 1,
-    limit: 12,
-    overrideAccess: false,
-    select: {
-      title: true,
-      slug: true,
-      authors: true,
-      publishedAt: true,
-      categories: true,
-      heroImage: true,
-      meta: true,
-      populatedAuthors: true,
-    },
-  })
-  const categoryLinks = await getArticleCategoryLinks(payload)
+  const { posts, categoryLinks } = await getArticleArchivePageData()
 
   return (
     <ArticlesArchiveLayout

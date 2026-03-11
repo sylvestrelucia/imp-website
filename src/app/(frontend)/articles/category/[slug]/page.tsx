@@ -1,10 +1,8 @@
 import type { Metadata } from 'next/types'
 
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 import React from 'react'
-import { notFound } from 'next/navigation'
-import { ArticlesArchiveLayout } from '../../_components/ArticlesArchiveLayout'
+import { ArticlesArchiveLayout } from '@/app/(frontend)/articles/_components/ArticlesArchiveLayout'
+import { getArticleCategoryStaticParams, getCategoryArchivePageData } from '@/app/(frontend)/articles/_lib/getCategoryArchivePageData'
 
 export const revalidate = 600
 
@@ -14,48 +12,10 @@ type Args = {
   }>
 }
 
-const PAGE_SIZE = 12
-
 export default async function Page({ params: paramsPromise }: Args) {
   const { slug } = await paramsPromise
   const decodedSlug = decodeURIComponent(slug)
-  const payload = await getPayload({ config: configPromise })
-
-  const categoryResult = await payload.find({
-    collection: 'categories',
-    where: {
-      slug: {
-        equals: decodedSlug,
-      },
-    },
-    limit: 1,
-    pagination: false,
-    depth: 0,
-  })
-  const category = categoryResult.docs?.[0]
-  if (!category) notFound()
-
-  const posts = await payload.find({
-    collection: 'posts',
-    depth: 1,
-    limit: PAGE_SIZE,
-    overrideAccess: false,
-    where: {
-      categories: {
-        contains: category.id,
-      },
-    },
-    select: {
-      title: true,
-      slug: true,
-      authors: true,
-      publishedAt: true,
-      categories: true,
-      heroImage: true,
-      meta: true,
-      populatedAuthors: true,
-    },
-  })
+  const { category, posts } = await getCategoryArchivePageData(decodedSlug)
 
   return (
     <ArticlesArchiveLayout
@@ -91,20 +51,5 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 }
 
 export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const categories = await payload.find({
-    collection: 'categories',
-    limit: 1000,
-    overrideAccess: false,
-    pagination: false,
-    select: {
-      slug: true,
-    },
-  })
-
-  return categories.docs
-    .filter((category) => typeof category.slug === 'string' && category.slug)
-    .map((category) => ({
-      slug: String(category.slug),
-    }))
+  return getArticleCategoryStaticParams()
 }

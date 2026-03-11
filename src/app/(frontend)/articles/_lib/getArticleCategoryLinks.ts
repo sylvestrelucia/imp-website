@@ -1,14 +1,6 @@
-type CategoryLink = {
-  title: string
-  slug: string
-  count: number
-}
-
-const toKebabCase = (value: string): string =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
+import type { Post } from '@/payload-types'
+import { toKebabCase } from '@/utilities/toKebabCase'
+import type { ArticleCategoryMeta, CategoryLink } from '@/app/(frontend)/articles/_lib/types'
 
 export async function getArticleCategoryLinks(payload: any): Promise<CategoryLink[]> {
   const categoriesResult = await payload.find({
@@ -59,4 +51,24 @@ export async function getArticleCategoryLinks(payload: any): Promise<CategoryLin
   )
 
   return categoryLinks.filter((category) => category.count > 0)
+}
+
+export const getArticleCategoryMeta = (categories: Post['categories']): ArticleCategoryMeta[] => {
+  if (!Array.isArray(categories)) return []
+
+  return categories
+    .map((category) => {
+      if (typeof category === 'object' && category !== null && 'title' in category) {
+        const maybeTitle = category.title
+        const maybeSlug = 'slug' in category ? category.slug : ''
+        const title = typeof maybeTitle === 'string' ? maybeTitle.trim() : ''
+        if (!title) return null
+
+        const slug = typeof maybeSlug === 'string' && maybeSlug.trim() ? maybeSlug.trim() : toKebabCase(title)
+        return { title, slug }
+      }
+
+      return null
+    })
+    .filter((item): item is ArticleCategoryMeta => Boolean(item?.title && item?.slug))
 }

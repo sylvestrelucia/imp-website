@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import type { ReactNode } from 'react'
-import { ActionLinkButton } from './ActionLinkButton'
-import { getHomeCMSContent } from './getHomeCMSContent'
+import { ActionLinkButton } from '@/app/(frontend)/_components/ActionLinkButton'
+import { getHomeCMSContent } from '@/app/(frontend)/_components/getHomeCMSContent'
 
 function BottomGridColumn({
   title,
