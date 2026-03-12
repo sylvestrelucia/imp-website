@@ -32,16 +32,7 @@ const desktopHeaderNav = [
   { href: '/newsletter-subscription', label: 'Subscribe', icon: 'mail' as const },
 ]
 
-function splitLabel(label: string): [string, string?] {
-  const parts = label.trim().split(/\s+/)
-  if (parts.length <= 1) return [label]
-  if (parts.length === 2) return [parts[0]!, parts[1]!]
-
-  const mid = Math.ceil(parts.length / 2)
-  return [parts.slice(0, mid).join(' '), parts.slice(mid).join(' ')]
-}
-
-export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
+export function SiteHeader({ navItems: _navItems }: { navItems?: SiteHeaderNavItem[] }) {
   const MENU_CONTAINER_MS = 300
   const MENU_ITEM_TRANSITION_MS = 300
   const MENU_ITEM_STAGGER_MS = 55
@@ -53,18 +44,11 @@ export function SiteHeader({ navItems }: { navItems?: SiteHeaderNavItem[] }) {
   const [hoveredDesktopItem, setHoveredDesktopItem] = useState<string | null>(null)
   const pathname = usePathname()
   const menuAnimationTimeoutRef = useRef<number | null>(null)
-  const nav = (navItems?.length
-    ? navItems.map((item) => {
-        const [line1, line2] = splitLabel(item.label)
-        return { ...item, label: [line1, line2] as [string, string?] }
-      })
-    : []) as Array<{ href: string; label: [string, string?]; newTab?: boolean }>
-  const navWithoutHome = nav.filter((item) => item.href !== '/')
-  const mobileMenuItems = [
-    { href: '/', label: ['Home'] as [string, string?] },
-    ...navWithoutHome,
-    { href: '/newsletter-subscription', label: ['Subscribe to Newsletter'] as [string, string?] },
-  ]
+  const mobileMenuItems = desktopHeaderNav.map((item) => ({
+    href: item.href,
+    label: [item.label] as [string, string?],
+    newTab: false,
+  }))
 
   useEffect(() => {
     setMenuOpen(false)
